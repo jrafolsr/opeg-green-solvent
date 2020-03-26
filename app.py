@@ -10,9 +10,10 @@ import plotly.graph_objs as go
 import pandas as pd
 from support_functions import update_Ra, create_report, solvents_trace
 
+#external_stylesheets = [r'.\static\style.css']
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+app = dash.Dash(__name__, external_stylesheets = external_stylesheets)
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 server = app.server
 
@@ -49,7 +50,7 @@ traces = [solvents_trace(df,None),
                                             )]
 
 plot_layout = go.Layout(height = 400, width = 600,  title = None,
-                paper_bgcolor='white',
+                paper_bgcolor= 'white',
                 margin =  {"t": 0, "b": 0, "l": 0, "r": 0},
                 scene={"aspectmode": "cube",
                        "xaxis": {"title": 'Dispersion dD (MPa)<sup>1/2</sup>', },
@@ -156,7 +157,7 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
             )            
             ]
     )
-])
+] )
 
 
 

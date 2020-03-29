@@ -8,6 +8,8 @@ import numpy as np
 import dash_html_components as html
 from pandas import read_excel
 import plotly.graph_objs as go
+HANSEN_COORDINATES = ['dD - Dispersion','dP - Polarity','dH - Hydrogen bonding']
+
 
 df2 = read_excel('solventSelectionTool_table.xlsx', sheet_name = 1, header = 0, usecols=(0,1))
 df2.set_index('Statements', inplace=True, drop=True)
@@ -44,16 +46,16 @@ def solvents_trace(df, filter_solvent = None):
 
 
 
-def update_Ra(coordinates, reference):
+def update_Ra(hansen_coordinates, reference = [None] * 3):
     """Calculates the Hansen parameter as Ra**2 = 4(dD - dD_0)**2 + (dP - dP_0)**2 + (dH - dH_0)**2.
-        - coordinates: a Dataframe series cointaining a 3-elements array
+        - coordinates: a Dataframe the three Hansen coordinates columns
         - reference: 3-element vector to which to calculate the distance"""
     for value in reference:
         if value == None:
             return np.nan
-    distance = coordinates - reference
-    Ra = [np.round(np.sqrt(4*d[0]**2 + d[1]**2 + d[2]**2),2) for d in distance]
-    return Ra
+    distance = (hansen_coordinates - reference)**2
+    Ra = 4*distance['dD - Dispersion'] + distance['dP - Polarity']+ distance['dH - Hydrogen bonding']
+    return np.sqrt(Ra).round(2)
 
 def create_report(data = None):
     if data is None:
@@ -102,9 +104,9 @@ def create_report(data = None):
             precaution_html.append(html.Br())
     
     
-        text = [html.H2('{}'.format(data['Solvent Name'])),
+        text = [html.H3('{}'.format(data['Solvent Name'])),
                 html.P('CAS: {}'.format(data['CAS Number'])),
-                html.P('Hansen coordinates: dD = {:.1f}, dP = {:.1f}, dH = {:.1f}'.format(*data['Hansen coordinates'])),
+                html.P('Hansen coordinates: dD = {:.1f}, dP = {:.1f}, dH = {:.1f}'.format(*data[HANSEN_COORDINATES])),
                 html.P('Melting Point: {:.0f}°C \t \t Boiling point:  {:.0f}°C'.format(data['Melting Point (°C)'], data['Boiling Point (°C)'])),
                 html.B('GSK green solvent selection scores'),
                 html.P('Overall score: {:.1f}'.format(data['Composite score'])),
@@ -128,11 +130,15 @@ def filter_by_hazard(hazards_to_remove, data_hazards):
                     break
     return hazards_filter
 
-def GSK_calculator2(df, scores):
+def GSK_calculator(df, scores):
     k = 0
     gmean = 1
     for element in scores:
         if len(element):
             gmean *= ((df[element]).prod(axis =1)).pow(1/len(element))
             k += 1
-    return np.power(gmean,1/k).round(2)
+    if k > 0:
+        gmean = np.power(gmean,1/k).round(2)
+    else:
+        gmean = np.nan
+    return gmean

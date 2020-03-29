@@ -8,7 +8,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
 import pandas as pd
-from support_functions import update_Ra, create_report, solvents_trace, df2,filter_by_hazard, GSK_calculator2
+from support_functions import update_Ra, create_report, solvents_trace, df2,filter_by_hazard, GSK_calculator
 
 #external_stylesheets = [r'.\static\style.css']
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -22,19 +22,13 @@ df = pd.read_excel('solventSelectionTool_table.xlsx', sheet_name = 0, header = 2
 df.set_index('Solvent Name', inplace=True, drop=False)
 # Drop first row as it is empty
 df = df[1:]
-# Add extra columns with calculated parameters
-df['Hansen coordinates']= [np.array([df['dD - Dispersion'].iloc[i], df['dP - Polarity'].iloc[i], df['dH - Hydrogen bonding'].iloc[i]]) for i in range(df.shape[0])]
-list_GSK_scores = df.columns.values[7:18]
-df['Waste'] = [np.array([df['Incineration'].iloc[i], df['Recycling'].iloc[i], df['Biotreatment'].iloc[i], df['VOC Emissions'].iloc[i]]) for i in range(df.shape[0])]
-df['Environment'] = [np.array([df['Aquatic Impact'].iloc[i], df['Air Impact'].iloc[i]]) for i in range(df.shape[0])]
-df['Health'] = [np.array([df['Health Hazard'].iloc[i], df['Exposure Potential'].iloc[i]]) for i in range(df.shape[0])]
-df['Safety'] = [np.array([df['Flammability and Explosion'].iloc[i], df['Reactivity and Stability'].iloc[i]]) for i in range(df.shape[0])]
-df['Ra'] = np.nan
+HANSEN_COORDINATES = ['dD - Dispersion','dP - Polarity','dH - Hydrogen bonding']
 WASTE = ['Incineration','Recycling','Biotreatment','VOC Emissions']
 HEALTH = ['Health Hazard', 'Exposure Potential']
 ENVIRONMENT = ['Aquatic Impact', 'Air Impact']
 SAFETY = ['Flammability and Explosion', 'Reactivity and Stability']
-df['Composite score'] = GSK_calculator2(df, [WASTE, HEALTH, ENVIRONMENT, SAFETY])
+df['Ra'] = update_Ra(df[HANSEN_COORDINATES])
+df['Composite score'] = GSK_calculator(df, [WASTE, HEALTH, ENVIRONMENT, SAFETY])
 
 traces = [solvents_trace(df,None),
         go.Scatter3d(x = [], y = [], z =[], mode='markers', marker=dict(color = 'black',
@@ -58,10 +52,10 @@ axis_template = {
 
 plot_layout = go.Layout(height = 400, width = 600,
                         title = None,
-                        font = {'size' : 12},
+                        font = {'size' : 11},
                         paper_bgcolor= '#F0F0F0',
                         plot_bgcolor = '#F0F0F0',
-                        margin =  {"t": 0, "b": 0, "l": 0, "r": 0},
+                        margin =  {"t": .25, "b": .25, "l": .25, "r": .25},
                         scene={"aspectmode": "cube",
                                "xaxis": {"title": 'Dispersion dD (MPa)<sup>1/2</sup>', **axis_template},
                                "yaxis": {"title": 'Polarity dP (MPa)<sup>1/2</sup>', **axis_template },
@@ -69,8 +63,8 @@ plot_layout = go.Layout(height = 400, width = 600,
                         showlegend = False,
                         clickmode =  'event+select')
 
-
-
+# Some of the callbacks will not exist at the beginning of the page.... check on that.
+app.config['suppress_callback_exceptions']=True
 
 
 app.layout = html.Div([html.Div(className = 'row',  children = [
@@ -104,6 +98,64 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                         )
                     ])
                 ]),
+                html.Div(id = 'div-solvent-list', children = [
+                    dcc.Dropdown(
+                        id='solvent-list',
+                        options=[{'label': name, 'value': i} for name,i in zip(df['Solvent Name'],df.index)],
+                        value = [],
+                        placeholder = "Choose a solvent...",
+                        multi = True,
+                    )] , style = {'width' : '50%','display': 'inline-block'}
+               ),
+               html.Div(id = 'div-hazard-list', children = [          
+                    dcc.Dropdown(
+                        id = 'hazard-list',
+                        options=[{'label': label, 'value': label} for text, label in zip(df2['Fulltext'][2:48],df2.index[2:48])],
+                        value = [],
+                        placeholder = "Remove hazards...",
+                        multi = True
+                    ),
+                ], style = {'width' : '50%','display': 'inline-block'}
+                ),
+                html.Button('UPDATE', id='button-update', style = {'width': '45%', 'background-color': '#C0C0C0'}),
+                html.Button('RESET', id='button-reset', style = {'width': '45%', 'background-color': '#C0C0C0'}),                    
+                html.Div( id = 'checklist-container', children = [
+                    html.Details([html.Summary(html.B('Exclude scores')),
+                        html.Button(id='button-GSK-score',n_clicks=0, children='Update GSK'),
+                        html.Div(id='test'),
+                        dcc.Checklist(id = 'checklist-waste',
+                                      options = [{'label': name, 'value': name} for name in WASTE],
+                                      value = WASTE
+                                      ),
+                        dcc.Checklist(id = 'checklist-health',
+                                      options = [{'label': name, 'value': name} for name in HEALTH],
+                                      value = HEALTH
+                                      ),
+                        dcc.Checklist(id = 'checklist-environment',
+                                      options = [{'label': name, 'value': name} for name in ENVIRONMENT],
+                                      value = ENVIRONMENT
+                                      ),
+                        dcc.Checklist(id = 'checklist-safety',
+                                      options = [{'label': name, 'value': name} for name in SAFETY],
+                                      value = SAFETY
+                                      )
+                    ]),
+                ]),
+                html.Div([
+                    html.B(html.Div(id = 'greenness-indicator', children = 'Greenness > 0')),
+                    dcc.Slider(
+                    id = 'greenness-filter',
+                    min = 0,
+                    max = 8,
+                    value = 0,
+                    step = 1,
+                )], style = {'width' : '200px', 'display': 'inline-block', 'margin-left' : '20px'}), 
+                html.Div(id = 'report', children = create_report()
+             )
+            ],
+            style = {'width' : '45%', 'display': 'inline-block','margin-right' : '20px'}        
+            ),
+            html.Div([
             dcc.Graph(id='main-plot', 
                   figure= { "data": traces,
                             "layout": plot_layout,
@@ -127,84 +179,40 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                     'textAlign': 'left','width': '20px','maxWidth': '50px'
                 }],
                 style_table={'overflowY': 'scroll',
-                             'height' : '300px',
-                             'maxHeight': '300px',
+                             'height' : '200px',
+                             'maxHeight': '200px',
                              'minWidth': '300px',
-                             'maxWidth': '600px',
+                             'maxWidth': '500px',
                              'border': 'thin lightgrey solid'},
                 style_cell={'minWidth': '0px', 'width': '20px','maxWidth': '50px',
                             'whiteSpace': 'normal', 'text-align':'center'
-            }                
+                            }                
                 )
             ],
-            style = {'max-Width' : '60%', 'display': 'inline-block','margin-right': '50px'}        
-            ),
-            html.Div([
-                html.Div(id = 'div-solvent-list', children = [
-                    dcc.Dropdown(
-                        id='solvent-list',
-                        options=[{'label': name, 'value': i} for name,i in zip(df['Solvent Name'],df.index)],
-                        value = [],
-                        placeholder = "Choose a solvent...",
-                        multi = True,
-                    )] , style = {'width' : '50%','display': 'inline-block'}
-               ),
-               html.Div(id = 'div-hazard-list', children = [          
-                    dcc.Dropdown(
-                        id = 'hazard-list',
-                        options=[{'label': label, 'value': label} for text, label in zip(df2['Fulltext'][2:48],df2.index[2:48])],
-                        value = [],
-                        placeholder = "Remove hazards...",
-                        multi = True
-                    ),
-                ], style = {'width' : '50%','display': 'inline-block'}
-                ),
-                html.Div( id = 'checklist-container', children = [
-                    html.Details([html.Summary(html.B('Exclude scores')),
-                        dcc.Checklist(id = 'checklist-waste',
-                                      options = [{'label': name, 'value': name} for name in WASTE],
-                                      value = WASTE
-                                      ),
-                        dcc.Checklist(id = 'checklist-health',
-                                      options = [{'label': name, 'value': name} for name in HEALTH],
-                                      value = HEALTH
-                                      ),
-                        dcc.Checklist(id = 'checklist-environment',
-                                      options = [{'label': name, 'value': name} for name in ENVIRONMENT],
-                                      value = ENVIRONMENT
-                                      ),
-                        dcc.Checklist(id = 'checklist-safety',
-                                      options = [{'label': name, 'value': name} for name in SAFETY],
-                                      value = SAFETY
-                                      )
-                    ]),
-                ]),
-                html.Button('Plot virtual solvent', id='virtual-solvent', style = {'width': '50%', 'background-color': '#C0C0C0'}),
-                html.Div([
-                    html.B(html.Div(id = 'greenness-indicator', children = 'Greenness > 0')),
-                    dcc.Slider(
-                    id = 'greenness-filter',
-                    min = 0,
-                    max = 8,
-                    value = 0,
-                    step = 1,
-                )], style = {'width' : '200px', 'display': 'inline-block', 'margin-left' : '20px'}), 
-                html.Div(id = 'report', children = create_report()
-             )
-                ],
             
 
-            style = {'width' : '40%', 'display': 'inline-block', 'vertical-align':'top', 'margin-top' : '3.6rem'}
+            style = {'width' : '50%', 'display': 'inline-block', 'vertical-align':'top'}
             )            
             ]
     )
 ] )
 
-
+@app.callback([Output('solvent-list', 'value'),
+               Output('hazard-list', 'value'),
+               Output('greenness-filter','value'),
+               Output('checklist-waste', 'value'),
+               Output('checklist-health', 'value'),
+               Output('checklist-environment', 'value'),
+               Output('checklist-safety', 'value'),
+               Output('button-GSK-score', 'n_clicks')],
+              [Input('button-reset', 'n_clicks')]
+        )
+def reset_all(n_clicks):
+    return [],[], 0, WASTE, HEALTH, ENVIRONMENT, SAFETY, 0
 
 @app.callback([Output('main-plot', 'figure'),
                Output('table', 'data')],
-              [Input('virtual-solvent', 'n_clicks'),
+              [Input('button-update', 'n_clicks'),
                Input('greenness-filter','value'),
                Input('table', 'sort_by')],
               [State('main-plot', 'figure'),
@@ -214,10 +222,8 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                State('solvent-list', 'value'),
                State('hazard-list', 'value')])
 def display_virtual_solvent(_, greenness, sort_by, figure, dD, dP, dH, solvent_list, hazard_list):
-#    print(dD, dP, dH)
-    
     # Updates based on the new Hansen coordinates
-    df['Ra'] = update_Ra(df['Hansen coordinates'], [dD,dP,dH])
+    df['Ra'] = update_Ra(df[HANSEN_COORDINATES], [dD,dP,dH])
     figure['data'][1]['x'] = [dD] if dD != None else []
     figure['data'][1]['y'] = [dP] if dP != None else []
     figure['data'][1]['z'] = [dH] if dH != None else []
@@ -225,7 +231,7 @@ def display_virtual_solvent(_, greenness, sort_by, figure, dD, dP, dH, solvent_l
     if len(solvent_list) > 1:
         x, y, z = [],[],[]
         for solvent in solvent_list:
-            dD, dP, dH = df['Hansen coordinates'].loc[solvent]
+            dD, dP, dH =  df[HANSEN_COORDINATES].loc[solvent]
             x.append(dD), y.append(dP), z.append(dH)
     else:
         x, y, z = [],[],[]
@@ -237,13 +243,13 @@ def display_virtual_solvent(_, greenness, sort_by, figure, dD, dP, dH, solvent_l
     greenness_filter = df['Composite score'] > greenness
     hazard_filter = filter_by_hazard(hazard_list, df['Hazard Labels'])
     data_filter = greenness_filter & hazard_filter
-    if greenness > 0:
-        figure['data'][0] = solvents_trace(df, data_filter)
+
+    figure['data'][0] = solvents_trace(df, data_filter)
     
     # Updates based on the data excluded
     dff = df[['Solvent Name', 'Composite score', 'Ra']][data_filter]
 
-    # In the sorting bitton have been clicked, it sort according to the action (ascending or descending)
+    # If the sorting button have been clicked, it sorts according to the action (ascending or descending)
     # if not, sorts by the ascending distance in the Hansen space, by default
     if len(sort_by):
         dfs = dff.sort_values(
@@ -262,14 +268,13 @@ def display_virtual_solvent(_, greenness, sort_by, figure, dD, dP, dH, solvent_l
 @app.callback([Output('dD-input', 'value'),
                Output('dP-input', 'value'),
                Output('dH-input', 'value')],
-            [Input('solvent-list', 'value')],
-            [State('dD-input', 'value'),
-             State('dP-input', 'value'),
-             State('dH-input', 'value')])
-def update_hansen_parameters_by_list(solvent_index,  dD, dP, dH):
-    N = len(solvent_index)
+            [Input('solvent-list', 'value')])
+def update_hansen_parameters_by_list(solvent_list):
+    N = len(solvent_list)
     if N > 0:
-        dD, dP, dH = df['Hansen coordinates'].loc[solvent_index].mean().round(2)
+        dD, dP, dH = df[HANSEN_COORDINATES].loc[solvent_list].mean().round(2)
+    else:
+        dD, dP, dH = None, None, None
 #        df['Ra'] = update_Ra(df['Hansen coordinates'], [dD,dP,dH])
 #    print(dD, dP, dH)
     return  dD, dP, dH
@@ -306,16 +311,26 @@ def update_selected_solvent(clicked_data, data):
 @app.callback([Output('greenness-indicator', 'children'),
               Output('table', 'sort_by')],
              [Input('greenness-filter','value'),
-              Input('virtual-solvent', 'n_clicks')])
-def update_greenness(value, _):
+              Input('button-update', 'n_clicks')])
+def update_GSK_filter(value, _):
     sort_by = [{'column_id': 'Ra', 'direction': 'asc'}]
-    return f'Greenness > {value:d}', sort_by
+    return f'GSK score > {value:d}', sort_by
 
-#@app.callback(Output('test','children'),
-#        [Input('checklist-waste', 'value')])
-#def checklist_scores(value):
-#    print(value)
-#    return ''
+@app.callback(Output('button-update', 'n_clicks'),
+        [Input('button-GSK-score', 'n_clicks')],
+        [State('checklist-waste', 'value'),
+         State('checklist-health', 'value'),
+         State('checklist-environment', 'value'),
+         State('checklist-safety', 'value')])
+def update_GSK_score(n_clicks, waste, health, environment, safety):
+    print('This items have been excluded for the GSK_score values')
+    [print(item) for item in WASTE if item not in waste]
+    [print(item) for item in HEALTH if item not in health]
+    [print(item) for item in ENVIRONMENT if item not in environment]
+    [print(item) for item in SAFETY if item not in safety]
+    df['Composite score'] = GSK_calculator(df, [waste, health, environment, safety])
+    print('The GSK score has been updated')
+    return 0
 
 if __name__ == '__main__':
     app.run_server(debug=True, port = 8051)

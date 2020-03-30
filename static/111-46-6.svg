@@ -1,0 +1,16 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="243px" height="37px" viewBox="0 0 243 37" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" >
+<text x="0" y="0" stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 2.81471 34.1389)" style="font:normal normal normal 200px 'Arial'" >
+HO</text>
+<text x="0" y="0" stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 116.367 14.1389)" style="font:normal normal normal 200px 'Arial'" >
+O</text>
+<text x="0" y="0" stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 220.29 34.1389)" style="font:normal normal normal 200px 'Arial'" >
+OH</text>
+<path stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 -238.433 -461.433)" d="M 4880.38,7344.04 L 4880.38,7367.13 L 4360.77,7067.13 L 4360.77,7044.04 L 4880.38,7344.04 Z " />
+<path stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 -238.433 -461.433)" d="M 3938.76,7310.77 L 3928.76,7293.45 L 4360.77,7044.04 L 4360.77,7067.13 L 3938.76,7310.77 Z " />
+<path stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 -238.433 -461.433)" d="M 5295.4,7104.43 L 5305.4,7121.75 L 4880.38,7367.13 L 4880.38,7344.04 L 5295.4,7104.43 Z " />
+<path stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 -238.433 -461.433)" d="M 6439.23,7044.04 L 6439.23,7067.13 L 5919.62,7367.13 L 5919.62,7344.04 L 6439.23,7044.04 Z " />
+<path stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 -238.433 -461.433)" d="M 6871.23,7293.45 L 6861.23,7310.77 L 6439.23,7067.13 L 6439.23,7044.04 L 6871.23,7293.45 Z " />
+<path stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 -238.433 -461.433)" d="M 5919.62,7344.04 L 5919.62,7367.13 L 5495.04,7122 L 5505.04,7104.68 L 5919.62,7344.04 Z " />
+</svg>

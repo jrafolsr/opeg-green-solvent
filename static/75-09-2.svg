@@ -1,0 +1,10 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="95px" height="33px" viewBox="0 0 95 33" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" >
+<text x="0" y="0" stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 3.46782 29.4849)" style="font:normal normal normal 200px 'Arial'" >
+Cl</text>
+<text x="0" y="0" stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 79.0743 29.4849)" style="font:normal normal normal 200px 'Arial'" >
+Cl</text>
+<path stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 -312.433 -463.433)" d="M 4976.86,7286.05 L 4966.86,7268.73 L 5425,7004.23 L 5425,7027.32 L 4976.86,7286.05 Z " />
+<path stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 -312.433 -463.433)" d="M 5861.3,7256.12 L 5851.3,7273.44 L 5425,7027.32 L 5425,7004.23 L 5861.3,7256.12 Z " />
+</svg>

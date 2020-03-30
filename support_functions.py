@@ -39,7 +39,7 @@ def solvents_trace(df, filter_solvent = None):
                                          '%{hovertext}<br>' +\
                                          'dD = %{x:.2f}<br>dP = %{y:.2f}<br>dH = %{z:.2f}',
                         text = fdf['Solvent Name'],\
-                        hovertext = [f'GSK score  = {value:.2f}' for value in fdf['Composite score']])
+                        hovertext = [f'Score  = {value:.2f}' for value in fdf['Composite score']])
 
     return trace
 
@@ -59,7 +59,7 @@ def update_Ra(hansen_coordinates, reference = [None] * 3):
 
 def create_report(data = None):
     if data is None:
-        text = [html.H2('A Tool for Straightforward Selection of Functional Green Solvents for Printed Electronics'),
+        text = [html.H3('A Tool for Straightforward Selection of Functional Green Solvents for Printed Electronics'),
                 html.Em('Christian Larsen, Petter Lundberg, Shi Tang,... Ludvig Edman'),
                 html.P([html.A(['Link to the sutdy'], href = 'http://www.opeg-umu.se/')]),
                 html.Details([html.Summary(html.B('Abstract')),
@@ -104,12 +104,16 @@ def create_report(data = None):
             precaution_html.append(html.Br())
     
     
-        text = [html.H3('{}'.format(data['Solvent Name'])),
+        text = [html.Img(src = '\\static\\' + '{0:s}.svg'.format(data['CAS Number']),\
+                                 alt='Chemical strcuture',\
+                                 title = 'Chemical strcuture of {}'.format(data['Solvent Name']),\
+                                style = {'width' : '250px','max-height' : '125px','float':'right', 'margin-left' : '10px'}),
+                html.H3('{}'.format(data['Solvent Name'])),
                 html.P('CAS: {}'.format(data['CAS Number'])),
                 html.P('Hansen coordinates: dD = {:.1f}, dP = {:.1f}, dH = {:.1f}'.format(*data[HANSEN_COORDINATES])),
                 html.P('Melting Point: {:.0f}°C \t \t Boiling point:  {:.0f}°C'.format(data['Melting Point (°C)'], data['Boiling Point (°C)'])),
-                html.B('GSK green solvent selection scores'),
-                html.P('Overall score: {:.1f}'.format(data['Composite score'])),
+                html.P(html.B('GSK green solvent selection scores')),
+                html.P("GSK score: {:.1f}, User's adapted score: {:.1f}".format(data['GSK score'],data['Composite score'])),
                 html.P(scores),
                 html.B('Globally harmonized System of Classification and Labelling of Chemical'),
                 html.Div([

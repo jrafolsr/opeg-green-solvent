@@ -1,0 +1,15 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="155px" height="76px" viewBox="0 0 155 76" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" >
+<text x="0" y="0" stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 58.1933 17.0259)" style="font:normal normal normal 200px 'Arial'" >
+O</text>
+<text x="0" y="0" stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 131.657 56.8068)" style="font:normal normal normal 200px 'Arial'" >
+OH</text>
+<path stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 -282.433 -442.433)" d="M 5249.53,7421.81 L 5250.12,7410.6 L 5259.53,7404.49 L 5769.73,7699.06 L 5769.73,7722.15 L 5249.53,7421.81 Z " />
+<path stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 -282.433 -442.433)" d="M 4699.42,7666.74 L 4704.56,7642.55 L 5239.41,7404.42 L 5250.12,7410.6 L 5249.53,7421.81 L 4699.42,7666.74 Z " />
+<path stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 -282.433 -442.433)" d="M 4288.22,7210.05 L 4312.8,7207.47 L 4704.56,7642.55 L 4699.42,7666.74 L 4288.22,7210.05 Z " />
+<path stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 -282.433 -442.433)" d="M 4595.48,6677.85 L 4605.54,6700.43 L 4312.8,7207.47 L 4288.22,7210.05 L 4595.48,6677.85 Z " />
+<path stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 -282.433 -442.433)" d="M 5084.73,6781.84 L 5080.57,6801.41 L 4605.54,6700.43 L 4595.48,6677.85 L 5084.73,6781.84 Z " />
+<path stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 -282.433 -442.433)" d="M 5189.94,6933.68 L 5209.83,6931.59 L 5259.53,7404.49 L 5250.12,7410.6 L 5239.41,7404.42 L 5189.94,6933.68 Z " />
+<path stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 -282.433 -442.433)" d="M 6184.74,7459.45 L 6194.74,7476.77 L 5769.73,7722.15 L 5769.73,7699.06 L 6184.74,7459.45 Z " />
+</svg>

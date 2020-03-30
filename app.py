@@ -163,7 +163,8 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                     ])
                 ]),
             html.P(),
-            html.Div(id = 'report', className = 'big-container', children = create_report(), style = {'display' : 'block'})     
+            html.Div(id = 'report', className = 'big-container', children = create_report(),
+                     style = {'display' : 'block','height' : '500px', 'overflow-y': 'auto'})     
             ],
             style = {'width' : '45%', 'display': 'inline-block','margin-right' : '20px'}        
             ),

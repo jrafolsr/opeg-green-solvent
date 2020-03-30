@@ -116,9 +116,8 @@ def create_report(data = None):
                 html.P("GSK score: {:.1f}, User's adapted score: {:.1f}".format(data['GSK score'],data['Composite score'])),
                 html.P(scores),
                 html.B('Globally harmonized System of Classification and Labelling of Chemical'),
-                html.Div([
                 html.P(hazard_html),
-                html.P(precaution_html)], style = {'height' : '200px', 'overflow-y': 'scroll'})]
+                html.P(precaution_html)]
         return text
     
     

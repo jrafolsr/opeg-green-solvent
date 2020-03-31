@@ -75,8 +75,8 @@ app.config['suppress_callback_exceptions']=True
 
 
 app.layout = html.Div([html.Div(className = 'row',  children = [
-        html.Div([
-                html.H3('Selection of Functional Green Solvents'),
+        html.Div(className = 'column left', children = [
+                html.H3('Selection of Functional Green Solvent'),
                 html.Div(id = 'hansen-div', className = 'main-inputs-container',  children = [
                 html.P('Type the Hansen parameters of the solute...'),
                     html.P(['Dispersion:  ',
@@ -166,21 +166,23 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
             html.Div(id = 'report', className = 'big-container', children = create_report(),
                      style = {'display' : 'block','height' : '500px', 'overflow-y': 'auto'})     
             ],
-            style = {'width' : '45%', 'display': 'inline-block','margin-right' : '20px'}        
+            style = {}        
             ),
-            html.Div([
+            html.Div(className = 'column right', children = [
                 html.Div(id = 'buttons-div', className  = 'buttons-container', children = [
                     html.Button('UPDATE',
                                 id='button-update',
                                 title = 'Click here to update the plot and table',
+                                n_clicks = 1,
                                 style = {'background-color': '#C0C0C0', 'margin' : '10px'}),
                     html.Button('RESET',
                                 id='button-reset',
                                 title = 'Click here to Reset the app',
                                 style = {'background-color': '#C0C0C0','margin' : '10px'}),
                    ]),                       
-               html.Div(['Data taken from this reference',html.Br(),
-                         'You can find the paper in here', html.Br(),
+               html.Div(['Data taken from this ', html.A('reference', href = 'https://www.umu.se/globalassets/personalbilder/petter-lundberg/Profilbild.jpg?w=185'),\
+                         html.Br(),
+                         'You can find the paper in ',html.A('here', href = 'https://www.hitta.se/petter+lundberg/ume%C3%A5/person/~STlsww5X4'), html.Br(),
                          "Checkout OPEG's group webpage"], style = {'display' : 'inline-block', 'width' : '55%','vertical-align':'top','margin-top': '3.6rem'}),                                         
                 html.Div([
                     dcc.Graph(id='main-plot', 
@@ -220,105 +222,34 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                     ], style = {'margin-top' : '20px', 'align-content': 'center', 'text-align' : 'center'}
                 )
             ],           
-            style = {'width' : '50%', 'display': 'inline-block', 'vertical-align':'top'}
+            style = {'columns': '600px 2'}
             )            
             ]
     )
 ] )
 
-@app.callback([Output('solvent-list', 'value'),
-               Output('hazard-list', 'value'),
-               Output('greenness-filter','value'),
-               Output('checklist-waste', 'value'),
-               Output('checklist-health', 'value'),
-               Output('checklist-environment', 'value'),
-               Output('checklist-safety', 'value'),
-               Output('button-GSK-score', 'n_clicks')],
+@app.callback(Output('button-update', 'n_clicks'),
               [Input('button-reset', 'n_clicks')]
         )
 def reset_all(n_clicks):
-    return [],[], 0, WASTE, HEALTH, ENVIRONMENT, SAFETY, 0
+    return 0
 
-@app.callback([Output('main-plot', 'figure'),
-               Output('table', 'data')],
-              [Input('button-update', 'n_clicks'),
-               Input('greenness-filter','value'),
-               Input('table', 'sort_by')],
-              [State('main-plot', 'figure'),
-               State('dD-input', 'value'),
-               State('dP-input', 'value'),
-               State('dH-input', 'value'),
-               State('solvent-list', 'value'),
-               State('hazard-list', 'value'),
-               State('checklist-waste', 'value'),
-               State('checklist-health', 'value'),
-               State('checklist-environment', 'value'),
-               State('checklist-safety', 'value')])
-def display_virtual_solvent(_, greenness, sort_by, figure, dD, dP, dH, solvent_list, hazard_list, waste, health, environment, safety):
-    # Updates based on the new Hansen coordinates
-    df['Ra'] = update_Ra(df[HANSEN_COORDINATES], [dD,dP,dH])
-    figure['data'][1]['x'] = [dD] if dD != None else []
-    figure['data'][1]['y'] = [dP] if dP != None else []
-    figure['data'][1]['z'] = [dH] if dH != None else []
-    
-    # Update the Compound score based on the labels the user selected
-#    print('This items have been excluded for the GSK_score values')
-#    [print(item) for item in WASTE if item not in waste]
-#    [print(item) for item in HEALTH if item not in health]
-#    [print(item) for item in ENVIRONMENT if item not in environment]
-#    [print(item) for item in SAFETY if item not in safety]
-    df['Composite score'] = GSK_calculator(df, [waste, health, environment, safety])
-    print('The GSK score has been updated')
-    
-    
-    if len(solvent_list) > 1:
-        x, y, z = [],[],[]
-        for solvent in solvent_list:
-            dD, dP, dH =  df[HANSEN_COORDINATES].loc[solvent]
-            x.append(dD), y.append(dP), z.append(dH)
-    else:
-        x, y, z = dD, dP, dH
-    figure['data'][2]['x'] = x
-    figure['data'][2]['y'] = y
-    figure['data'][2]['z'] = z
-        
-    # Updates based on the greeness filter
-    greenness_filter = df['Composite score'] > greenness
-    hazard_filter = filter_by_hazard(hazard_list, df['Hazard Labels'])
-    data_filter = greenness_filter & hazard_filter
-
-    figure['data'][0] = solvents_trace(df, data_filter)
-    
-    # Updates based on the data excluded
-    dff = df[['Solvent Name', 'Composite score', 'Ra']][data_filter]
-
-    # If the sorting button have been clicked, it sorts according to the action (ascending or descending)
-    # if not, sorts by the ascending distance in the Hansen space, by default
-    if len(sort_by):
-        dfs = dff.sort_values(
-            sort_by[0]['column_id'],
-            ascending= sort_by[0]['direction'] == 'asc',
-            inplace=False
-        )
-        
-    else:
-        # Default sorting applied
-#        print('Default sorting applied') 
-        dfs = dff.sort_values('Ra', ascending= True, inplace = False)
-
-    return figure, dfs.to_dict('records')
 
 @app.callback([Output('dD-input', 'value'),
                Output('dP-input', 'value'),
                Output('dH-input', 'value')],
-            [Input('solvent-list', 'value')])
-def update_hansen_parameters_by_list(solvent_list):
+            [Input('solvent-list', 'value')],
+           [State('button-update', 'n_clicks'),
+           State('dD-input', 'value'),
+           State('dP-input', 'value'),
+           State('dH-input', 'value')])
+def update_hansen_parameters_by_list(solvent_list, n_clicks, dD, dP, dH ):   
     N = len(solvent_list)
     if N > 0:
         dD, dP, dH = df[HANSEN_COORDINATES].loc[solvent_list].mean().round(2)
-    else:
+    elif n_clicks == 0:
         dD, dP, dH = None, None, None
-#        df['Ra'] = update_Ra(df['Hansen coordinates'], [dD,dP,dH])
+
 #    print(dD, dP, dH)
     return  dD, dP, dH
 
@@ -356,13 +287,94 @@ def update_selected_solvent(clicked_data, data):
              [Input('greenness-filter','value')])
 def update_GSK_filter(value):
     sort_by = [{'column_id': 'Ra', 'direction': 'asc'}]
-    return f'Compound score > {value:d}', sort_by
+    return f'Composite score > {value:d}', sort_by
 
 
+@app.callback([Output('main-plot', 'figure'),
+               Output('table', 'data'),
+               Output('greenness-filter','value'),
+               Output('solvent-list', 'value'),
+               Output('hazard-list', 'value'),
+               Output('checklist-waste', 'value'),
+               Output('checklist-health', 'value'),
+               Output('checklist-environment', 'value'),
+               Output('checklist-safety', 'value')],
+              [Input('button-update', 'n_clicks')],
+              [State('table', 'sort_by'),
+               State('main-plot', 'figure'),
+               State('dD-input', 'value'),
+               State('dP-input', 'value'),
+               State('dH-input', 'value'),
+               State('greenness-filter','value'),               
+               State('solvent-list', 'value'),
+               State('hazard-list', 'value'),
+               State('checklist-waste', 'value'),
+               State('checklist-health', 'value'),
+               State('checklist-environment', 'value'),
+               State('checklist-safety', 'value')])
+def display_virtual_solvent(n_clicks, sort_by, figure, dD, dP, dH, greenness, solvent_list, hazard_list, waste, health, environment, safety):
+    # If the Reset button is click, reinitialize all the values
+    if n_clicks == 0:
+        sort_by, dD, dP, dH,greenness, solvent_list, hazard_list, waste, health, environment, safety =  [], None, None, None, 0, [], [], WASTE, HEALTH, ENVIRONMENT, SAFETY  
+    # Updates based on the new Hansen coordinates
+    df['Ra'] = update_Ra(df[HANSEN_COORDINATES], [dD,dP,dH])
+    figure['data'][1]['x'] = [dD] if dD != None else []
+    figure['data'][1]['y'] = [dP] if dP != None else []
+    figure['data'][1]['z'] = [dH] if dH != None else []
+    
+    # Update the composite score based on the labels the user selected
+#    print('This items have been excluded for the GSK_score values')
+#    [print(item) for item in WASTE if item not in waste]
+#    [print(item) for item in HEALTH if item not in health]
+#    [print(item) for item in ENVIRONMENT if item not in environment]
+#    [print(item) for item in SAFETY if item not in safety]
+    df['Composite score'] = GSK_calculator(df, [waste, health, environment, safety])
+#    print('The GSK score has been updated')
+    
+    
+    if len(solvent_list) > 1:
+        x, y, z = [],[],[]
+        for solvent in solvent_list:
+            dD, dP, dH =  df[HANSEN_COORDINATES].loc[solvent]
+            x.append(dD), y.append(dP), z.append(dH)
+    else:
+        x, y, z = dD, dP, dH
+    figure['data'][2]['x'] = x
+    figure['data'][2]['y'] = y
+    figure['data'][2]['z'] = z
+        
+    # Updates based on the greeness filter
+    greenness_filter = df['Composite score'] > greenness
+    hazard_filter = filter_by_hazard(hazard_list, df['Hazard Labels'])
+    data_filter = greenness_filter & hazard_filter
 
+    figure['data'][0] = solvents_trace(df, data_filter)
+    
+    # Updates based on the data excluded
+    dff = df[['Solvent Name', 'Composite score', 'Ra']][data_filter]
+
+    # If the sorting button have been clicked, it sorts according to the action (ascending or descending)
+    # if not, sorts by the ascending distance in the Hansen space, by default
+    if len(sort_by):
+        dfs = dff.sort_values(
+            sort_by[0]['column_id'],
+            ascending= sort_by[0]['direction'] == 'asc',
+            inplace=False
+        )
+        
+    else:
+        # Default sorting applied
+#        print('Default sorting applied') 
+        dfs = dff.sort_values('Ra', ascending= True, inplace = False)
+
+    return figure, dfs.to_dict('records'), greenness, solvent_list, hazard_list, waste, health, environment, safety
+
+
+# I need this lines to upload the images
 @app.server.route('/static/<resource>')
 def serve_static(resource):
     return flask.send_from_directory(STATIC_PATH, resource)
 
 if __name__ == '__main__':
-    app.run_server(debug=True, port = 8051)
+#    app.run_server(debug=True, port = 8051, host = '130.239.229.125')
+    app.run_server(debug=True, port = 8051, host = '130.239.110.240')

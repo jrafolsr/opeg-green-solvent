@@ -59,8 +59,9 @@ def update_Ra(hansen_coordinates, reference = [None] * 3):
 
 def create_report(data = None):
     if data is None:
-        text = [html.H3('A Tool for Straightforward Selection of Functional Green Solvents for Printed Electronics'),
-                html.Em('Christian Larsen, Petter Lundberg, Shi Tang,... Ludvig Edman'),
+        text = [html.H3('A Tool for Straightforward Selection of Functional Green Solvents for Printed Electronics (to be UPDATED)'),
+                html.Em('Christian Larssen, Petter Lundberg, Shi Tang,... Ludvig Edman'),
+                html.P('This initial page will be updated with more basic info about how it works and what it does...'),
                 html.P([html.A(['Link to the sutdy'], href = 'http://www.opeg-umu.se/')]),
                 html.Details([html.Summary(html.B('Abstract')),
                 html.P('The emerging field of printed electronics is directly dependent on the use of large volumes of printing and coating solvents, which frequently are deposited and evaporated within open spaces available to workers during the fabrication process. In this context, it is very unfortunate that many [T...] made freely available to colleagues and the public on the web site: ???')
@@ -138,7 +139,7 @@ def GSK_calculator(df, scores):
     gmean = 1
     for element in scores:
         if len(element):
-            gmean *= ((df[element]).prod(axis =1)).pow(1/len(element))
+            gmean *= ((df[element]).prod(axis =1, skipna = False)).pow(1/len(element))
             k += 1
     if k > 0:
         gmean = np.power(gmean,1/k).round(2)

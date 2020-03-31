@@ -9,6 +9,25 @@
     padding-left: 5px;
 }
 
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.column {
+  float: left;
+}
+
+.left {
+  width: 40%;
+}
+
+.right {
+  width: 50%;
+}
+
+
 .buttons-container {
   width: 40%;
   align-content: center;

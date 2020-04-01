@@ -32,12 +32,13 @@ def solvents_trace(df, filter_solvent = None):
                                                             cmin = 3,
                                                             cmid = 6,
                                                             cmax = 9,
-                                                            colorbar = {"thickness": 20, "len": 0.66, "x": 0.9, "y": 0.5}
+                                                            colorbar = {'title' : 'Composite<br>score',\
+                                                                        "thickness": 20, "len": 0.66, "x": 0.9, "y": 0.5}
                                                             ),\
                         marker_size=8,\
                         hovertemplate = '<b>%{text}</b><br>' +\
                                          '%{hovertext}<br>' +\
-                                         'dD = %{x:.2f}<br>dP = %{y:.2f}<br>dH = %{z:.2f}',
+                                         'dD = %{x:.2f}<br>dP = %{y:.2f}<br>dH = %{z:.2f} <extra></extra>',
                         text = fdf['Solvent Name'],\
                         hovertext = [f'Score  = {value:.2f}' for value in fdf['Composite score']])
 

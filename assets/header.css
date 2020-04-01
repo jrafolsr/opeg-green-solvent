@@ -16,65 +16,70 @@
   clear: both;
 }
 .column {
+  margin-left : 10px;
+  margin-right : 10px;
   float: left;
 }
 
 .left {
-  width: 40%;
+  width: 300px;
+
+}
+
+.middle {
+
+  width: 600px;
 }
 
 .right {
-  width: 50%;
+  width: 550px;
 }
 
 
 .buttons-container {
-  width: 40%;
+  width: 100%;
   align-content: center;
   text-align: center;
-  margin-top: 3.6rem;
   display: inline-block;
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 .button, button{
-	width': 120px;
+	width: 120px;
 	background-color: #C0C0C0;
-	margin-left : 25px;
+    margin-left : 25px;
+	margin-right : 25px;
+	display : inline-block
 }
 
 .main-inputs-container {
-	width : 48%;
-	display: inline-block;
+	width : 100%;
 	vertical-align: top;
-	text-align: center;
+	text-align: left;
 	border-radius: 4px;
     border: 1px solid #bbb;
     box-sizing: border-box;
-	margin-left: 2%;
+	padding-left: 10px;
 	margin-bottom: 10px;
 	padding: 5px;
 	background-color:  #DCDCDC;
 }
 
 .big-container {
-	width : 98%;
-	display: inline-block;
+    width : 100%;
 	vertical-align: top;
 	text-align: left;
 	border-radius: 4px;
     border: 1px solid #bbb;
     box-sizing: border-box;
-	margin-left: 2%;
+	padding-left: 10px;
 	margin-bottom: 10px;
 	padding: 10px;
 	background-color:  #DCDCDC;
 }
 
 .big-container .filters-type {
-	width : 30%;
-	display: inline-block;
+	width : 100%;
 	vertical-align: top;
 	text-align: left;
-	margin-left: 3%;
 }

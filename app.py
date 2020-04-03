@@ -89,7 +89,7 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
         html.H3('Selection of Functional Green Solvent'),
         html.Div(className = 'column left', children = [
                 html.Div(id = 'hansen-div', className = 'main-inputs-container',  children = [
-                    html.P('Type the Hansen parameters of the solute...'),
+                    html.P(['Type the ',html.Div(['Hansen parameters', html.Span('Some info about them', className = 'tooltiptext')], className = 'tooltip'),' of the solute...']),
                         html.Div(style = {'width': '225px', 'text-align' : 'right', 'align-content': 'center'}, children = [
                         html.P(['Dispersion:  ',
                             dcc.Input(
@@ -143,6 +143,20 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                         ]),
                     ]),
                     html.Details(className = 'main-inputs-container', children = [
+                        html.Summary(html.B(['Filter by ',html.Div(['composite score', html.Span(['= (waste * environment * health * safety)', html.Sup('1/4')], className = 'tooltiptext')], className = 'tooltip'),' value'])),  
+                        html.Div(id = 'greenness-div',className = 'filters-type', children = [
+                            html.P('Shows only the solvents above the selected score:'),
+                            html.Div(id = 'greenness-indicator', children = 'Greenness > 0'),
+                            dcc.Slider(
+                            id = 'greenness-filter',
+                            min = 0,
+                            max = 8,
+                            value = 0,
+                            step = 1,
+                            )
+                        ],  style = {'width' : '100%', 'text-align' : 'center'}),
+                    ]),
+                    html.Details(className = 'main-inputs-container', children = [
                        html.Summary(html.B('Recalculate composite score')),                    
                         html.Div(id = 'checklist-div',className = 'filters-type',  children = [
                             html.P('The unchecked scores will be excluded from the final composite score'),
@@ -172,20 +186,6 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                                           )
                             ]),
                         ]),
-                    html.Details(className = 'main-inputs-container', children = [
-                        html.Summary(html.B('Filter by composite score value')),  
-                        html.Div(id = 'greenness-div',className = 'filters-type', children = [
-                            html.P('Shows only the solvents above the selected score:'),
-                            html.Div(id = 'greenness-indicator', children = 'Greenness > 0'),
-                            dcc.Slider(
-                            id = 'greenness-filter',
-                            min = 0,
-                            max = 8,
-                            value = 0,
-                            step = 1,
-                            )
-                        ],  style = {'width' : '100%', 'text-align' : 'center'}),
-                    ]),
                     html.Details(className = 'main-inputs-container', children = [
                         html.Summary(html.B('Filter by melting and boiling points')),
                             dcc.RangeSlider(
@@ -434,4 +434,4 @@ def serve_static(resource):
 
 if __name__ == '__main__':
 #    app.run_server(debug=True, port = 8051, host = '130.239.229.125')
-    app.run_server(debug=True, port = 8051, host = '130.239.110.240')
+    app.run_server(debug=True, port = 8051)#, host = '130.239.110.240')

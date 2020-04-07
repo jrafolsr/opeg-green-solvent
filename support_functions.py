@@ -25,9 +25,25 @@ def solvents_trace(df, filter_solvent = None):
     x = fdf['dD - Dispersion']
     y = fdf['dP - Polarity']
     z = fdf['dH - Hydrogen bonding']
-    trace = go.Scatter3d(x = x, y = y, z = z, mode='markers', marker=dict( color = fdf['Composite score'],\
+    if fdf['Ra'].isnull().any():
+        costumdata = np.vstack([df['Melting Point (°C)'], df['Boiling Point (°C)'], -1*np.ones(df['Ra'].shape)]).T
+#        size = 6
+    else:
+        costumdata = fdf[['Melting Point (°C)', 'Boiling Point (°C)', 'Ra']]
+#        s = fdf['Ra']- fdf['Ra'].nsmallest(2)[-1]
+#        s [s< 0] = 0
+    W = 6/np.log(3)
+    A = np.log(2) + np.log(3)/2
+#        size = 16*np.exp(-0.5*s/s.max())
+    size = np.exp( A + fdf['Composite score']/W).values
+    size[np.isnan(size)] = 6
+    size[fdf['Composite score'] < 3] = 6
+    size[fdf['Composite score'] > 9] = 18
+#    print(size)
+#    size = 6
+    trace = go.Scatter3d(x = x, y = y, z = z,customdata = costumdata, mode='markers', marker=dict( color = fdf['Composite score'],\
                                                             colorscale = 'RdYlGn',\
-                                                            opacity=0.8,\
+                                                            opacity = 1,
                                                             showscale = True,
                                                             cmin = 3,
                                                             cmid = 6,
@@ -35,10 +51,10 @@ def solvents_trace(df, filter_solvent = None):
                                                             colorbar = {'title' : 'Composite<br>score',\
                                                                         "thickness": 20, "len": 0.66, "x": 0.9, "y": 0.5}
                                                             ),\
-                        marker_size=8,\
+                        marker_size = size,  marker_line_width = .25,marker_line_color= 'black',\
                         hovertemplate = '<b>%{text}</b><br>' +\
                                          '%{hovertext}<br>' +\
-                                         'dD = %{x:.2f}<br>dP = %{y:.2f}<br>dH = %{z:.2f} <extra></extra>',
+                                         'dD = %{x:.2f}<br>dP = %{y:.2f}<br>dH = %{z:.2f} <extra>Ra = %{customdata[2]:.2f}<br>mp  = %{customdata[0]:.2f} °C<br>bp  = %{customdata[1]:.2f} °C</extra>',
                         text = fdf['Solvent Name'],\
                         hovertext = [f'Score  = {value:.2f}' for value in fdf['Composite score']])
 
@@ -60,7 +76,7 @@ def update_Ra(hansen_coordinates, reference = [None] * 3):
 
 def create_report(data = None):
     if data is None:
-        text = [html.H3('A Tool for Straightforward Selection of Functional Green Solvents for Printed Electronics (to be UPDATED)'),
+        text = [html.H4('A Tool for Straightforward Selection of Functional Green Solvents for Printed Electronics (to be UPDATED)'),
                 html.Em('Christian Larssen, Petter Lundberg, Shi Tang,... Ludvig Edman'),
                 html.P('This initial page will be updated with more basic info about how it works and what it does...'),
                 html.P([html.A(['Link to the sutdy'], href = 'http://www.opeg-umu.se/')]),

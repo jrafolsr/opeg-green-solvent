@@ -32,10 +32,8 @@ def solvents_trace(df, filter_solvent = None):
         costumdata = fdf[['Melting Point (°C)', 'Boiling Point (°C)', 'Ra']]
 #        s = fdf['Ra']- fdf['Ra'].nsmallest(2)[-1]
 #        s [s< 0] = 0
-    W = 6/np.log(3)
-    A = np.log(2) + np.log(3)/2
 #        size = 16*np.exp(-0.5*s/s.max())
-    size = np.exp( A + fdf['Composite score']/W).values
+    size = 2*np.sqrt(3) * 3**(fdf['Composite score']/6).values
     size[np.isnan(size)] = 6
     size[fdf['Composite score'] < 3] = 6
     size[fdf['Composite score'] > 9] = 18
@@ -54,7 +52,7 @@ def solvents_trace(df, filter_solvent = None):
                         marker_size = size,  marker_line_width = .25,marker_line_color= 'black',\
                         hovertemplate = '<b>%{text}</b><br>' +\
                                          '%{hovertext}<br>' +\
-                                         'dD = %{x:.2f}<br>dP = %{y:.2f}<br>dH = %{z:.2f} <extra>Ra = %{customdata[2]:.2f}<br>mp  = %{customdata[0]:.2f} °C<br>bp  = %{customdata[1]:.2f} °C</extra>',
+                                         'dD = %{x:.2f}<br>dP = %{y:.2f}<br>dH = %{z:.2f} <extra>Ra = %{customdata[2]:.1f}<br>mp  = %{customdata[0]:.0f} °C<br>bp  = %{customdata[1]:.0f} °C</extra>',
                         text = fdf['Solvent Name'],\
                         hovertext = [f'Score  = {value:.2f}' for value in fdf['Composite score']])
 

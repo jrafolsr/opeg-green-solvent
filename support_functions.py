@@ -161,3 +161,8 @@ def GSK_calculator(df, scores):
     else:
         gmean = np.nan
     return gmean
+
+def f2s(x):
+    if x is None:
+        x = 0.0
+    return f'{x: 3.1f}'

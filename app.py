@@ -52,7 +52,7 @@ traces = [solvents_trace(df,None),
                                                         symbol = 'circle',\
                                                         opacity = 1),\
                                             marker_size=6,\
-                                            text = ['Virtual solvent'],\
+                                            text = ['Your solute'],\
                                             hovertemplate = '<b>%{text}</b><br><br>' +\
                                      'dD = %{x:.2f}<br>dP = %{y:.2f}<br>dH = %{z:.2f} <extra></extra>'),
         go.Scatter3d(x = [], y = [], z =[], mode='markers', marker=dict(
@@ -136,15 +136,14 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                         'textAlign': 'left','width': '20px','maxWidth': '50px'
                     }],
                     style_table={'overflowY': 'scroll',
-                                 'overflowx': 'auto',
+                                 'overflowX': 'auto',
                                  'height' : '300px',
                                  'maxHeight': '400px',
                                  'minWidth': '300px',
                                  'width': '100%',
                                  'maxWidth': '600px',
                                  'border': 'thin lightgrey solid'},
-                    style_cell={'minWidth': '0px', 'width': '20px','maxWidth': '50px',
-                                'whiteSpace': 'normal', 'text-align':'center','textOverflow': 'ellipsis',
+                    style_cell={'minWidth': '0px', 'width': '20px','maxWidth': '75px', 'text-align':'center','textOverflow': 'ellipsis'
                                 },
 #                        style_data_conditional = [  {
 #                            'if': {
@@ -210,7 +209,12 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                                 multi = True,
                             )] 
                        ),
-                        html.P('Refine the solvent search by applying different filters'),
+                        html.Div(['Now, the solvents are classified based on the distance within the Hansen space, ',\
+                                  html.B('Ra', title = r'Ra = [4(dD2 - dD1)^2 + (dP2 - dP1)^2 + (dH2 - dH1)^2]^(1/2)', className = 'tooltip'),\
+                                         ', to the defined solute (black circle), i.e. ',
+                                         html.Em('"the closer the better".'),\
+                                         ' You can also refine the solvent search criteria by applying the following filters:'],
+                                         style = {'font-size' : 'small', 'margin-bottom' : '10px'}),
                         html.Div(id = 'filters-div', children = [
                             html.Details(className = 'main-inputs-container',  title = 'Show only the N closest candidates', children = [
                                 html.Summary(html.B(['Show less solvents'])),  
@@ -358,7 +362,7 @@ def update_selected_solvent(clicked_data, data):
         selected_rows = []
     else:
         solvent_selected = clicked_data['points'][0]['text']
-        if solvent_selected == 'Virtual solvent':
+        if solvent_selected == 'Your solute':
             selected_rows = []
         else:
             for i,solvent in enumerate(data):

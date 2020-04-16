@@ -141,7 +141,7 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                     sort_action='custom',
                     style_cell_conditional=[
                     {'if': {'column_id': 'Solvent Name'},
-                        'textAlign': 'left','width': '20px','maxWidth': '50px'
+                        'textAlign': 'left','width': '20px','maxWidth': '100px'
                     }],
                     style_table={'overflowY': 'scroll',
                                  'overflowX': 'auto',

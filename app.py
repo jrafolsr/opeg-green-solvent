@@ -82,17 +82,27 @@ plot_layout = go.Layout(title = {'text': 'HANSEN SPACE<br>dD = ' + f2s(0) + '  d
                                "camera": {"eye": {"x": 1.5, "y": 1.5, "z": 0.1}}
                                },
                         showlegend = False,
-                        clickmode =  'event+select')
+                        clickmode =  'event+select',
+                        autosize = True)
 
 # Some of the callbacks will not exist at the beginning of the page.... check on that.
 app.config['suppress_callback_exceptions']=True
 
 
 # Some text saved in variables
-INTRO_TEXT = [html.P('This app  will help you to identify a functional and greener alternative solvents for your solute. To find similarly functional solvents it makes use of the Hansen solubility parameters (HSP). The "greenness" of the solvent is defined throught the GSK score.'),\
+INTRO_TEXT = [html.Summary(html.B('How does it work?')),\
+              html.P('This app  will help you to identify a functional and greener alternative solvents for your solute. To find similarly functional solvents it makes use of the Hansen solubility parameters (HSP). The "greenness" of the solvent is defined throught the GSK score.'),\
               html.P(['(1) Use the right panel to either to identify the position of the currently used solvent(s) by its ', html.Span(html.B('HSP coordinates'), title = 'Dispersion (dD), Polarity (dP) and Hydrogen bonding (dH)', className = 'hover-span'),' or by ', html.B('name(s)'),' in the 3D Hansen space.']),\
               html.P('(2) Use the provided sorting and filtering tools to find the closest greener alternative.'),
               html.P(['(3) Click ', html.B('UPDATE'), ' to explore the alternative the solvents with ', html.Span('similar solvent capacity', title = 'In close proximity in the Hansen space.', className = 'hover-span')])]
+
+REFERENCES_TEXT = ['Hansen Parameters solubility ', html.A(' data', href = 'https://www.umu.se/globalassets/personalbilder/petter-lundberg/Profilbild.jpg?w=185', target='_blank'),\
+                     html.Br(),\
+                     'GSK green solvent selection data from ',html.A('[1]', href = 'https://pubs.rsc.org/en/content/articlelanding/2016/gc/c6gc00611f', target='_blank'),\
+                     ' and ', html.A('[2]', href = 'https://pubs.rsc.org/en/content/articlelanding/2011/gc/c0gc00918k', target='_blank'), html.Br(),\
+                     'GHS statements from ', html.A('PubChem', href = 'https://pubs.rsc.org/en/content/articlelanding/2011/gc/c0gc00918k', target='_blank'),\
+                     ' and ', html.A('European Chemicals Agency (ECHA) C&L Inventory', href = 'https://echa.europa.eu/information-on-chemicals/cl-inventory-database/', target='_blank'), html.Br(),\
+                     "Checkout OPEG's group ", html.A('webpage', href = 'http://www.opeg-umu.se/', target='_blank')] 
 
 
 app.layout = html.Div([html.Div(className = 'row',  children = [
@@ -100,14 +110,11 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
         html.Div(className = 'column left', children = [
             html.H4('Selection of Functional Green Solvent'),
             html.Div(id = 'intro_div', className = 'big-container', children = 
-                    html.P(INTRO_TEXT)
+                    html.Details(INTRO_TEXT, title = 'Click to see the details')
                     ),
             html.Div(id = 'report', className = 'big-container', children = create_report(),
              style = {'overflow-y': 'auto', 'height' : '400px'}),
-             html.Div(['Data taken from this ', html.A('reference', href = 'https://www.umu.se/globalassets/personalbilder/petter-lundberg/Profilbild.jpg?w=185'),\
-                     html.Br(),
-                     'You can find the paper in ',html.A('here', href = 'https://www.hitta.se/petter+lundberg/ume%C3%A5/person/~STlsww5X4'), html.Br(),
-                     "Checkout OPEG's group webpage"], className = 'big-container', style = {'height' : 'content-min', 'font-size' : 'xx-small'})
+             html.Div([html.Div(html.H6('Sources'), style = {'width' : '25%','display':'inline-block','vertical-align': 'top'}),html.Div(REFERENCES_TEXT, style = {'width' : '70%', 'display':'inline-block','vertical-align': 'top'})], className = 'big-container', style = {'font-size' : 'xx-small'})
         ]),
         #----------- Second column, where the plot and table go----------------
         html.Div(className = 'column middle', children = [                     
@@ -116,8 +123,9 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                       figure= { "data": traces,
                                 "layout": plot_layout,
                                 },
-                      config={"editable": False, "scrollZoom": False},
-                      style = {'width' : '95%', 'display':'inline-block', 'text-align' : 'center'})
+                      config={"editable": False},
+                      style = {'width' : '100%'}
+                      )
             ]),
             html.Div(id = 'table-div', children = [
                 dash_table.DataTable(
@@ -141,7 +149,7 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                                  'maxHeight': '400px',
                                  'minWidth': '300px',
                                  'width': '100%',
-                                 'maxWidth': '600px',
+                                 'maxWidth': '800px',
                                  'border': 'thin lightgrey solid'},
                     style_cell={'minWidth': '0px', 'width': '20px','maxWidth': '75px', 'text-align':'center','textOverflow': 'ellipsis'
                                 },

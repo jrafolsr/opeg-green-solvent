@@ -74,13 +74,16 @@ def update_Ra(hansen_coordinates, reference = [None] * 3):
 
 def create_report(data = None):
     if data is None:
-        text = [html.H4('A Tool for Straightforward Selection of Functional Green Solvents for Printed Electronics (to be UPDATED)'),
-                html.Em('Christian Larssen, Petter Lundberg, Shi Tang,... Ludvig Edman'),
-                html.P('This initial page will be updated with more basic info about how it works and what it does...'),
-                html.P([html.A(['Link to the sutdy'], href = 'http://www.opeg-umu.se/')]),
-                html.Details([html.Summary(html.B('Abstract')),
-                html.P('The emerging field of printed electronics is directly dependent on the use of large volumes of printing and coating solvents, which frequently are deposited and evaporated within open spaces available to workers during the fabrication process. In this context, it is very unfortunate that many [T...] made freely available to colleagues and the public on the web site: ???')
-                ])]
+        text = [html.H3('Solvent Information'),
+                html.P('CAS: xx-xx-xxx', title = 'The CAS universally identifies the solvent'),
+                html.P('Hansen coordinates: dD = x, dP = x, dH = x', title = 'The HSP define bla bla...'),
+                html.P('Melting Point: x °C \t \t Boiling point:  x °C', title = 'Information about the melting a boiling points of the solvent'),
+                html.P(html.B('GSK green solvent selection scores')),
+                html.P("GSK score: x, User's adapted score: x", title = 'The higher the "greener" the solvent is'),
+                html.P('Some info about the scores that are given for each solvent'),
+                html.B('Globally harmonized System of Classification and Labelling of Chemical'),
+                html.P('Some info about the classification and labelling of the solvents'),
+                ]
         return text
     else:
         # Indices string
@@ -95,7 +98,6 @@ def create_report(data = None):
             hazard_labels = ['Not Hazardous']
         else:
             hazard_labels = data['Hazard Labels'].split(' ')
-            
         hazard_html = []
         for hazard in hazard_labels:
             text_hazard = df2.Fulltext[df2.index == hazard].values[0]

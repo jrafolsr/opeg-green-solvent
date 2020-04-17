@@ -9,6 +9,12 @@
     padding-left: 5px;
 }
 
+P [title] {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black; 
+}
+
 /*-------- Hovering stuff ------- */
 
 .hover-span {

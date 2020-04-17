@@ -90,7 +90,7 @@ app.config['suppress_callback_exceptions']=True
 
 
 # Some text saved in variables
-INTRO_TEXT = [html.Summary(html.B('How does it work?')),\
+INTRO_TEXT = [html.Summary(html.B('HOW DOES IT WORK?')),\
               html.P('This app  will help you to identify a functional and greener alternative solvents for your solute. To find similarly functional solvents it makes use of the Hansen solubility parameters (HSP). The "greenness" of the solvent is defined throught the GSK score.'),\
               html.P(['(1) Use the right panel to either to identify the position of the currently used solvent(s) by its ', html.Span(html.B('HSP coordinates'), title = 'Dispersion (dD), Polarity (dP) and Hydrogen bonding (dH)', className = 'hover-span'),' or by ', html.B('name(s)'),' in the 3D Hansen space.']),\
               html.P('(2) Use the provided sorting and filtering tools to find the closest greener alternative.'),
@@ -102,7 +102,7 @@ REFERENCES_TEXT = ['Hansen Parameters solubility ', html.A(' data', href = 'http
                      ' and ', html.A('[2]', href = 'https://pubs.rsc.org/en/content/articlelanding/2011/gc/c0gc00918k', target='_blank'), html.Br(),\
                      'GHS statements from ', html.A('PubChem', href = 'https://pubs.rsc.org/en/content/articlelanding/2011/gc/c0gc00918k', target='_blank'),\
                      ' and ', html.A('European Chemicals Agency (ECHA) C&L Inventory', href = 'https://echa.europa.eu/information-on-chemicals/cl-inventory-database/', target='_blank'), html.Br(),\
-                     "Checkout OPEG's group ", html.A('webpage', href = 'http://www.opeg-umu.se/', target='_blank')] 
+                     'Made by the ', html.A('Organic Photonics and Electronics group (OPEG)', href = 'http://www.opeg-umu.se/', target='_blank')] 
 
 
 app.layout = html.Div([html.Div(className = 'row',  children = [
@@ -110,7 +110,7 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
         html.Div(className = 'column left', children = [
             html.H4('Selection of Functional Green Solvent'),
             html.Div(id = 'intro_div', className = 'big-container', children = 
-                    html.Details(INTRO_TEXT, title = 'Click to see the details')
+                    html.Details(INTRO_TEXT, title = 'Click the triangle to open or close the panel', open = 'open')
                     ),
             html.Div(id = 'report', className = 'big-container', children = create_report(),
              style = {'overflow-y': 'auto', 'height' : '400px'}),
@@ -179,7 +179,8 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                            ]),                     
                         html.Div(id = 'hansen-div', className = 'main-inputs-container',  children = [
                             html.P(['Type the ', html.Span('HSP', title = 'Hansen solubility parameters', className = 'hover-span'),' of your solute...']),
-                                html.Div(style = {'width': '225px', 'text-align' : 'right', 'align-content': 'center'}, children = [
+                                html.Div(style = {'width': 'max-content','text-align' : 'right', 'margin-left': 'auto',
+  'margin-right': 'auto'}, children = [
                                 html.P(['Dispersion:  ',
                                     dcc.Input(
                                         id = "dD-input",

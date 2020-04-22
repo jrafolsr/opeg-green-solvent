@@ -69,7 +69,9 @@ axis_template = {
     "zerolinecolor": '#808080',
 }
 
-plot_layout = go.Layout(title = {'text': 'HANSEN SPACE<br>dD = ' + f2s(0) + '  dP = ' + f2s(0) + '  dH = ' + f2s(0), 'y':0.9,'x':0.5, 'xanchor': 'center', 'yanchor': 'top'},
+plot_layout = go.Layout(title = {'text': 'Hansen Space<br>dD = ' + f2s(0) + '  dP = ' + f2s(0) + '  dH = ' + f2s(0),\
+                                 'y':0.9,'x':0.5, 'xanchor': 'center', 'yanchor': 'top',\
+                                 'font' : {'size' : 20, 'family' :  'Arial', 'color' : 'rgb(50, 50, 50)'}},
                         font = {'size' : 11},
                         paper_bgcolor= '#F0F0F0',
                         plot_bgcolor = '#F0F0F0',
@@ -91,17 +93,19 @@ app.config['suppress_callback_exceptions']=True
 
 # Some text saved in variables
 INTRO_TEXT = [html.Summary(html.B('HOW DOES IT WORK?')),\
-              html.P('This app  will help you to identify a functional and greener alternative solvents for your solute. To find similarly functional solvents it makes use of the Hansen solubility parameters (HSP). The "greenness" of the solvent is defined throught the GSK score.'),\
-              html.P(['(1) Use the right panel to either to identify the position of the currently used solvent(s) by its ', html.Span(html.B('HSP coordinates'), title = 'Dispersion (dD), Polarity (dP) and Hydrogen bonding (dH)', className = 'hover-span'),' or by ', html.B('name(s)'),' in the 3D Hansen space.']),\
-              html.P('(2) Use the provided sorting and filtering tools to find the closest greener alternative.'),
-              html.P(['(3) Click ', html.B('UPDATE'), ' to explore the alternative the solvents with ', html.Span('similar solvent capacity', title = 'In close proximity in the Hansen space.', className = 'hover-span')])]
+              html.P(['This app is design to help you identify functional and environmentally green solvents. The likelihood to be functional is based on ',
+              html.Span('Hansen solubility parameters (HSP)', title = 'Dispersion (dD), Polarity (dP) and Hydrogen bonding (dH)', className = 'hover-span'),', where a shorter distance ', html.Span('(Ra)', title = r'Ra = [4(dD2 - dD1)^2 + (dP2 - dP1)^2 + (dH2 - dH1)^2]^(1/2)', className = 'hover-span'),' in Hansen space correspond to a more similar solvent. The greenness score is based on the GlaxoSmithKline (GSK) solvent sustainability guide, where a higher composite score is a greener alternative.']),\
+              html.P(['(1) Use the right panel to either enter the ', html.B('HSP coordinates'),' of your solute directly, or estimate it from known functional ', html.B('solvent(s)'),' using the dropdown menu. Then click ', html.B('UPDATE.')]),\
+              html.P(['(2) The position of your solute is shown in the ',html.B('HANSEN SPACE.'), ' Use the graph to explore neighboring solvents. Find more information about certain solvent by clicking on it, or selecting it from the table. The color and size guides you in a sustainable direction.']),
+              html.P(['(3) The ', html.B('SELECTION TABLE'),' ranks the solvents based on the distance Ra to your solute, and specifies the composite score and other useful information solvents.'])]
 
-REFERENCES_TEXT = ['Hansen Parameters solubility ', html.A(' data', href = 'https://www.umu.se/globalassets/personalbilder/petter-lundberg/Profilbild.jpg?w=185', target='_blank'),\
+REFERENCES_TEXT = ['Hansen solubility ', html.A('theory and parameters', href = 'https://www.stevenabbott.co.uk/practical-solubility/hsp-basics.php', target='_blank'), ' (accessed: 2018-10-22)', \
                      html.Br(),\
                      'GSK green solvent selection data from ',html.A('[1]', href = 'https://pubs.rsc.org/en/content/articlelanding/2016/gc/c6gc00611f', target='_blank'),\
                      ' and ', html.A('[2]', href = 'https://pubs.rsc.org/en/content/articlelanding/2011/gc/c0gc00918k', target='_blank'), html.Br(),\
-                     'GHS statements from ', html.A('PubChem', href = 'https://pubs.rsc.org/en/content/articlelanding/2011/gc/c0gc00918k', target='_blank'),\
-                     ' and ', html.A('European Chemicals Agency (ECHA) C&L Inventory', href = 'https://echa.europa.eu/information-on-chemicals/cl-inventory-database/', target='_blank'), html.Br(),\
+                     'GHS statements from ', html.A('PubChem', href = 'https://pubchem.ncbi.nlm.nih.gov/', target='_blank'), ' (accessed: 2019-05-30)',\
+                     ' and ', html.A('European Chemicals Agency (ECHA) C&L Inventory', href = 'https://echa.europa.eu/information-on-chemicals/cl-inventory-database/', target='_blank'), ' (accessed: 2019-05-30)', html.Br(),\
+                     'Find the publication on ', html.A('The Amazing Journal', href = 'https://www.umu.se/globalassets/personalbilder/petter-lundberg/Profilbild.jpg?w=185', target='_blank'), html.Br(),
                      'Made by the ', html.A('Organic Photonics and Electronics group (OPEG)', href = 'http://www.opeg-umu.se/', target='_blank')] 
 
 
@@ -128,6 +132,7 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                       )
             ]),
             html.Div(id = 'table-div', children = [
+                html.H5('Selection table', style = {'text-align' : 'center'}),
                 dash_table.DataTable(
                     id='table',
                     columns=[{"name": key, "id": value} for key, value in TABLE_COLUMNS.items()],
@@ -178,7 +183,7 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                                         title = 'Click here to Reset the app'),
                            ]),                     
                         html.Div(id = 'hansen-div', className = 'main-inputs-container',  children = [
-                            html.P(['Type the ', html.Span('HSP', title = 'Hansen solubility parameters', className = 'hover-span'),' of your solute...']),
+                            html.P(['Type the ', html.Span('HSP', title = 'Hansen solubility parameters', className = 'hover-span'),' coordinates of your solute...']),
                                 html.Div(style = {'width': 'max-content','text-align' : 'right', 'margin-left': 'auto',
   'margin-right': 'auto'}, children = [
                                 html.P(['Dispersion:  ',
@@ -188,7 +193,7 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                                         type = 'number',
                                         placeholder="dD",
                                         style = {'width' : '80px'},
-                                    )]),
+                                    ), ' (MPa)', html.Sup('1/2')]),
             
                                 html.P(['Polarization: ',
                                     dcc.Input(
@@ -196,14 +201,14 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                                         type = 'number',
                                         placeholder="dP",
                                         style = {'width' : '80px'},
-                                    )]),
+                                    ), ' (MPa)', html.Sup('1/2')]),
                                 html.P(['H bonding:  ',
                                     dcc.Input(
                                         id = "dH-input",
                                         type = 'number',
                                         placeholder="dH",
                                         style = {'width' : '80px'},
-                                    )
+                                    ), ' (MPa)', html.Sup('1/2')
                                 ])
                             ])
                         ]),
@@ -218,11 +223,8 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                                 multi = True,
                             )] 
                        ),
-                        html.Div(['Now, the solvents are classified based on the distance within the Hansen space, ',\
-                                  html.B('Ra', title = r'Ra = [4(dD2 - dD1)^2 + (dP2 - dP1)^2 + (dH2 - dH1)^2]^(1/2)', className = 'tooltip'),\
-                                         ', to the defined solute (black circle), i.e. ',
-                                         html.Em('"the closer the better".'),\
-                                         ' You can also refine the solvent search criteria by applying the following filters:'],
+                        html.Div(['The solvents in the ', html.B('SELECTION TABLE'), ' are ranked with increasing distance (Ra) to the defined solute (black circle). For a functional and sustainable solvent, ',html.Em(['"the closer and ', html.B('the greener'), ' the better".']),\
+                                  html.P('You can also refine the solvent selection by applying the following filters:')],
                                          style = {'font-size' : 'small', 'margin-bottom' : '10px'}),
                         html.Div(id = 'filters-div', children = [
                             html.Details(className = 'main-inputs-container',  title = 'Show only the N closest candidates', children = [
@@ -428,7 +430,7 @@ def display_virtual_solvent(n_clicks, sort_by, figure, dD, dP, dH, greenness,ndi
         [], None, None, None, 0, N_SOLVENTS, [], [], WASTE, HEALTH, ENVIRONMENT, SAFETY, TEMPERATURE_RANGE
         
     # Change the title, which contains the current values for dP, dD and dH
-    figure['layout']['title']['text'] = 'HANSEN SPACE<br>dD = ' + f2s(dD) + '  dP = ' + f2s(dP) + '  dH = ' + f2s(dH)
+    figure['layout']['title']['text'] = 'Hansen Space<br>dD = ' + f2s(dD) + '  dP = ' + f2s(dP) + '  dH = ' + f2s(dH)
     # Updates based on the new Hansen coordinates
     df['Ra'] = update_Ra(df[HANSEN_COORDINATES], [dD,dP,dH])
     figure['data'][1]['x'] = [dD] if dD != None else []
@@ -499,5 +501,5 @@ def serve_static(resource):
     return flask.send_from_directory(STATIC_PATH, resource)
 
 if __name__ == '__main__':
-#    app.run_server(debug=True, port = 8051, host = '130.239.229.125')
-    app.run_server(debug=True, port = 8051)#, host = '130.239.110.240')
+#    app.run_server(debug=True, port = 8051, host = '130.239.229.125') # wifi
+    app.run_server(debug=True, port = 8051, host = '130.239.110.240') # LAN

@@ -25,14 +25,17 @@ def solvents_trace(df, filter_solvent = None):
     x = fdf['dD - Dispersion']
     y = fdf['dP - Polarity']
     z = fdf['dH - Hydrogen bonding']
+    costumdata = fdf[['Melting Point (°C)', 'Boiling Point (°C)', 'Ra']]    
     if fdf['Ra'].isnull().any():
-        costumdata = np.vstack([df['Melting Point (°C)'], df['Boiling Point (°C)'], -1*np.ones(df['Ra'].shape)]).T
+        hovertemplate = '<b>%{text}</b><br>' +\
+                                         '%{hovertext}<br>' +\
+                                         'dD = %{x:.2f}<br>dP = %{y:.2f}<br>dH = %{z:.2f} <extra>Ra = n/a <br>mp  = %{customdata[0]:.0f} °C<br>bp  = %{customdata[1]:.0f} °C</extra>'
 #        size = 6
     else:
-        costumdata = fdf[['Melting Point (°C)', 'Boiling Point (°C)', 'Ra']]
-#        s = fdf['Ra']- fdf['Ra'].nsmallest(2)[-1]
-#        s [s< 0] = 0
-#        size = 16*np.exp(-0.5*s/s.max())
+
+        hovertemplate = '<b>%{text}</b><br>' +\
+                                         '%{hovertext}<br>' +\
+                                         'dD = %{x:.2f}<br>dP = %{y:.2f}<br>dH = %{z:.2f} <extra>Ra = %{customdata[2]:.1f}<br>mp  = %{customdata[0]:.0f} °C<br>bp  = %{customdata[1]:.0f} °C</extra>'
     size = 2*np.sqrt(3) * 3**(fdf['Composite score']/6).values
     size[np.isnan(size)] = 6
     size[fdf['Composite score'] < 3] = 6
@@ -46,13 +49,11 @@ def solvents_trace(df, filter_solvent = None):
                                                             cmin = 3,
                                                             cmid = 6,
                                                             cmax = 9,
-                                                            colorbar = {'title' : 'Composite<br>score',\
-                                                                        "thickness": 20, "len": 0.66, "x": 0.9, "y": 0.5}
+                                                            colorbar = {'title' : 'Composite<br>    score  ',\
+                                                                        "thickness": 20, "len": 0.66, "x": 0.9, "y": 0.5,  'xanchor': 'center',  'yanchor': 'middle'}
                                                             ),\
                         marker_size = size,  marker_line_width = .25,marker_line_color= 'black',\
-                        hovertemplate = '<b>%{text}</b><br>' +\
-                                         '%{hovertext}<br>' +\
-                                         'dD = %{x:.2f}<br>dP = %{y:.2f}<br>dH = %{z:.2f} <extra>Ra = %{customdata[2]:.1f}<br>mp  = %{customdata[0]:.0f} °C<br>bp  = %{customdata[1]:.0f} °C</extra>',
+                        hovertemplate = hovertemplate,
                         text = fdf['Solvent Name'],\
                         hovertext = [f'Score  = {value:.2f}' for value in fdf['Composite score']])
 
@@ -75,9 +76,9 @@ def update_Ra(hansen_coordinates, reference = [None] * 3):
 def create_report(data = None):
     if data is None:
         text = [html.H3('Solvent Information'),
-                html.P('CAS: xx-xx-xxx', title = 'The CAS universally identifies the solvent'),
-                html.P('Hansen coordinates: dD = x, dP = x, dH = x', title = 'The HSP define bla bla...'),
-                html.P('Melting Point: x °C \t \t Boiling point:  x °C', title = 'Information about the melting a boiling points of the solvent'),
+                html.P('CAS', title = 'The CAS universally identifies the solvent'),
+                html.P('Hansen coordinates: dD, dP , dH', title = 'The HSP of the solvent'),
+                html.P('Melting Point: \t \t Boiling point:', title = 'Information about the melting a boiling points of the solvent'),
                 html.P(html.B('GSK green solvent selection scores')),
                 html.P("GSK score: x, User's adapted score: x", title = 'The higher the "greener" the solvent is'),
                 html.P('Some info about the scores that are given for each solvent'),
@@ -159,7 +160,7 @@ def GSK_calculator(df, scores):
             gmean *= ((df[element]).prod(axis =1, skipna = False)).pow(1/len(element))
             k += 1
     if k > 0:
-        gmean = np.power(gmean,1/k).round(2)
+        gmean = np.power(gmean,1/k).round(1)
     else:
         gmean = np.nan
     return gmean

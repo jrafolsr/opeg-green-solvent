@@ -15,7 +15,7 @@ df2 = read_excel('solventSelectionTool_table.xlsx', sheet_name = 1, header = 0, 
 df2.set_index('Statements', inplace=True, drop=True)
 
 
-def solvents_trace(df, filter_solvent = None):
+def solvents_trace(df, show_path = False, filter_solvent = None):
     """Sets the data for the main trace in the green-solvent program"""
     if filter_solvent is None:
         fdf = df
@@ -42,7 +42,10 @@ def solvents_trace(df, filter_solvent = None):
     size[fdf['Composite score'] > 9] = 18
 #    print(size)
 #    size = 6
-    trace = go.Scatter3d(x = x, y = y, z = z,customdata = costumdata, mode='markers', marker=dict( color = fdf['Composite score'],\
+    
+    if show_path: mode = 'markers+lines'
+    else: mode = 'markers'
+    trace = go.Scatter3d(x = x, y = y, z = z,customdata = costumdata, mode=mode, marker=dict( color = fdf['Composite score'],\
                                                             colorscale = 'RdYlGn',\
                                                             opacity = 1,
                                                             showscale = True,
@@ -52,10 +55,11 @@ def solvents_trace(df, filter_solvent = None):
                                                             colorbar = {'title' : 'Composite<br>    score  ',\
                                                                         "thickness": 20, "len": 0.66, "x": 0.9, "y": 0.5,  'xanchor': 'center',  'yanchor': 'middle'}
                                                             ),\
+                        line = dict(color = 'rgb(50, 50, 50)', width = 3, dash = 'dot'),\
                         marker_size = size,  marker_line_width = .25,marker_line_color= 'black',\
                         hovertemplate = hovertemplate,
                         text = fdf['Solvent Name'],\
-                        hovertext = [f'Score  = {value:.2f}' for value in fdf['Composite score']])
+                        hovertext = [f'Score  = {value:.1f}' for value in fdf['Composite score']])
 
     return trace
 
@@ -169,3 +173,46 @@ def f2s(x):
     if x is None:
         x = 0.0
     return f'{x: 3.1f}'
+
+
+def suggested_path(df, ref_solvent = None):
+    flag = True
+    solvent_path = []
+    if ref_solvent is None:
+        ref_GSK = 5.0 # Minimm GSK score to start the path with
+    else:
+        ref_GSK = ref_solvent['Composite score']
+        solvent_path.append(ref_solvent['Solvent Name'])
+    while True:
+        # Filter and sort out the less green
+        df1 = (df[(df['Composite score'] > ref_GSK) & (df['Ra'] > 0.0)]).sort_values(by = 'Ra', inplace = False)
+        flag = (len(df1) == 0)
+        
+        if flag: break
+    
+        ref_solvent = df1.iloc[0]
+        solvent_path.append(ref_solvent['Solvent Name'])
+        ref_GSK = ref_solvent['Composite score']
+        
+    return df.loc[solvent_path]
+
+def create_annotations(df):
+    annotations = []
+    k = 0
+    for x,y,z in df[HANSEN_COORDINATES].values:
+        annotations.append(
+            dict(showarrow=False,
+                            x = x,
+                            y = y,
+                            z = z,
+                            text=f'{k+1}',
+                            xshift = 10,
+                            yshift = 10,
+                            font=dict(
+                                color="black",
+                                size=14
+                            ),
+    
+                        ))
+        k += 1
+    return annotations

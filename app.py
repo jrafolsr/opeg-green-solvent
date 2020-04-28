@@ -8,7 +8,7 @@ from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
 import pandas as pd
 import flask
-from support_functions import update_Ra, create_report, solvents_trace, df2,filter_by_hazard, GSK_calculator, f2s
+from support_functions import update_Ra, create_report, solvents_trace, df2,filter_by_hazard, GSK_calculator, f2s, suggested_path, create_annotations
 
 # Folder where I can find the local resources, such as images
 STATIC_PATH = 'static'
@@ -78,6 +78,7 @@ plot_layout = go.Layout(title = {'text': 'Hansen Space<br>dD = ' + f2s(0) + '  d
                         margin =  {"t": .25, "b": .25, "l": .25, "r": .25},
                         hoverlabel = {'bgcolor' : 'black', 'font' : {'color': 'white'}}, 
                         scene={"aspectmode": "cube",
+#                               "aspectratio" : {'x' : 1, 'y' : 2, 'z' : 2},
                                "xaxis": {"title": 'Dispersion (MPa)<sup>1/2</sup>', **axis_template},
                                "yaxis": {"title": 'Polarity (MPa)<sup>1/2</sup>', **axis_template },
                                "zaxis": {"title":'Hydrogen bonding (MPa)<sup>1/2</sup>', **axis_template },
@@ -99,12 +100,12 @@ INTRO_TEXT = [html.Summary(html.B('HOW DOES IT WORK?')),\
               html.P(['(2) The position of your solute is shown in the ',html.B('HANSEN SPACE.'), ' Use the graph to explore neighboring solvents. Find more information about certain solvent by clicking on it, or selecting it from the table. The color and size guides you in a sustainable direction.']),
               html.P(['(3) The ', html.B('SELECTION TABLE'),' ranks the solvents based on the distance Ra to your solute, and specifies the composite score and other useful information solvents.'])]
 
-REFERENCES_TEXT = ['Hansen solubility ', html.A('theory and parameters', href = 'https://www.stevenabbott.co.uk/practical-solubility/hsp-basics.php', target='_blank'), ' (accessed: 2018-10-22)', \
+REFERENCES_TEXT = ['Hansen solubility ', html.A('theory and parameters', href = 'https://www.stevenabbott.co.uk/practical-solubility/hsp-basics.php', target='_blank'), ' (Last accessed: 2018-10-22)', \
                      html.Br(),\
                      'GSK green solvent selection data from ',html.A('[1]', href = 'https://pubs.rsc.org/en/content/articlelanding/2016/gc/c6gc00611f', target='_blank'),\
                      ' and ', html.A('[2]', href = 'https://pubs.rsc.org/en/content/articlelanding/2011/gc/c0gc00918k', target='_blank'), html.Br(),\
-                     'GHS statements from ', html.A('PubChem', href = 'https://pubchem.ncbi.nlm.nih.gov/', target='_blank'), ' (accessed: 2019-05-30)',\
-                     ' and ', html.A('European Chemicals Agency (ECHA) C&L Inventory', href = 'https://echa.europa.eu/information-on-chemicals/cl-inventory-database/', target='_blank'), ' (accessed: 2019-05-30)', html.Br(),\
+                     'GHS statements from ', html.A('PubChem', href = 'https://pubchem.ncbi.nlm.nih.gov/', target='_blank'), ' (Last accessed: 2019-05-30)',\
+                     ' and ', html.A('European Chemicals Agency (ECHA) C&L Inventory', href = 'https://echa.europa.eu/information-on-chemicals/cl-inventory-database/', target='_blank'), ' (Last accessed: 2019-05-30)', html.Br(),\
                      'Find the publication on ', html.A('The Amazing Journal', href = 'https://www.umu.se/globalassets/personalbilder/petter-lundberg/Profilbild.jpg?w=185', target='_blank'), html.Br(),
                      'Made by the ', html.A('Organic Photonics and Electronics group (OPEG)', href = 'http://www.opeg-umu.se/', target='_blank')] 
 
@@ -177,10 +178,13 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                             html.Button('UPDATE',
                                         id='button-update',
                                         title = 'Click here to update the plot and table',
-                                        n_clicks = 1),
+                                        n_clicks = 0,
+                                        n_clicks_timestamp = -1),
                             html.Button('RESET',
                                         id='button-reset',
-                                        title = 'Click here to Reset the app'),
+                                        title = 'Click here to Reset the app',
+                                        n_clicks = 0,
+                                        n_clicks_timestamp = -1),                                        
                            ]),                     
                         html.Div(id = 'hansen-div', className = 'main-inputs-container',  children = [
                             html.P(['Type the ', html.Span('HSP', title = 'Hansen solubility parameters', className = 'hover-span'),' coordinates of your solute...']),
@@ -227,6 +231,19 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                                   html.P('You can also refine the solvent selection by applying the following filters:')],
                                          style = {'font-size' : 'small', 'margin-bottom' : '10px'}),
                         html.Div(id = 'filters-div', children = [
+                            html.Details(className = 'main-inputs-container',  title = 'Suggested route', children = [
+                                html.Summary(html.B(['Suggested path to green paradise'])),  
+                                html.Div(id = 'path-div',className = 'filters-type', children = [
+                                    html.P(f'Proposed path to find the greenest functional solvent :'),
+                                    html.Button('SHOW PATH',
+                                                id='button-path',
+                                                title = 'Click here to view the suggested route',
+                                                n_clicks = 0,
+                                                n_clicks_timestamp = -1,
+                                                style = {'width' : '200px'}),
+                                    html.P('', id = 'error-path')
+                                ],  style = {'width' : '100%', 'text-align' : 'center'}),
+                            ]),
                             html.Details(className = 'main-inputs-container',  title = 'Show only the N closest candidates', children = [
                                 html.Summary(html.B(['Show less solvents'])),  
                                 html.Div(id = 'distance-div',className = 'filters-type', children = [
@@ -319,11 +336,11 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
         ], style = {'width' : '100%'})
 ] )
 
-@app.callback(Output('button-update', 'n_clicks'),
-              [Input('button-reset', 'n_clicks')]
-        )
-def reset_all(n_clicks):
-    return 0
+#@app.callback(Output('button-update', 'n_clicks'),
+#              [Input('button-reset', 'n_clicks')]
+#        )
+#def reset_all(n_clicks):
+#    return 0
 
 
 @app.callback(
@@ -336,18 +353,16 @@ def update_temperature_output(value):
                Output('dP-input', 'value'),
                Output('dH-input', 'value')],
             [Input('solvent-list', 'value')],
-           [State('button-update', 'n_clicks'),
-           State('dD-input', 'value'),
+           [State('dD-input', 'value'),
            State('dP-input', 'value'),
            State('dH-input', 'value')])
-def update_hansen_parameters_by_list(solvent_list, n_clicks, dD, dP, dH):   
+def update_hansen_parameters_by_list(solvent_list, dD, dP, dH):   
     N = len(solvent_list)
-    if N > 0:
-        dD, dP, dH = df[HANSEN_COORDINATES].loc[solvent_list].mean().round(2)
-    elif n_clicks == 0:
+    if N == 0:
         dD, dP, dH = None, None, None
-
-#    print(n_clicks, dD, dP, dH)
+    else: 
+        dD, dP, dH = df[HANSEN_COORDINATES].loc[solvent_list].mean().round(2)
+        
     return  dD, dP, dH
 
 
@@ -406,8 +421,11 @@ def update_distance_filter(value):
                Output('checklist-health', 'value'),
                Output('checklist-environment', 'value'),
                Output('checklist-safety', 'value'),
-               Output('temperatures-range-slider', 'value')],
-              [Input('button-update', 'n_clicks')],
+               Output('temperatures-range-slider', 'value'),
+               Output('error-path', 'children')],
+              [Input('button-update', 'n_clicks_timestamp'),
+               Input('button-reset', 'n_clicks_timestamp'),
+               Input('button-path', 'n_clicks_timestamp')],
               [State('table', 'sort_by'),
                State('main-plot', 'figure'),
                State('dD-input', 'value'),
@@ -423,9 +441,9 @@ def update_distance_filter(value):
                State('checklist-safety', 'value'),
                State('temperatures-range-slider', 'value'),
                State('HSP-values', 'children')])
-def display_virtual_solvent(n_clicks, sort_by, figure, dD, dP, dH, greenness,ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange, HSP):
+def display_virtual_solvent(update,reset,path, sort_by, figure, dD, dP, dH, greenness,ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange, HSP):
     # If the Reset button is click, reinitialize all the values
-    if n_clicks == 0:
+    if reset >=  update:
         sort_by, dD, dP, dH, greenness, ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange = \
         [], None, None, None, 0, N_SOLVENTS, [], [], WASTE, HEALTH, ENVIRONMENT, SAFETY, TEMPERATURE_RANGE
         
@@ -472,11 +490,28 @@ def display_virtual_solvent(n_clicks, sort_by, figure, dD, dP, dH, greenness,ndi
     
     # Send the data to plot with the filter and only the n-first values
     # OBS: needs some error managign in the cas of ndistance > the filtered data
-    figure['data'][0] = solvents_trace(df[data_filter].sort_values('Ra')[:ndistance])
-    
-    # Updates based on the data excluded
-    dff = df[list(TABLE_COLUMNS.values())][data_filter]
-
+    error_path = ''
+    if update >= path or reset >= path:
+        figure['data'][0] = solvents_trace(df[data_filter].sort_values('Ra')[:ndistance])
+        # Updates based on the data excluded
+        dff = df[list(TABLE_COLUMNS.values())][data_filter]
+        figure['layout']['scene']['annotations'] = []
+    else:
+        # Is the distance defined?
+        RA_EXIST =  not df['Ra'].isnull().all()
+        if RA_EXIST:
+            # Add here the PATH algorithm
+            if len(solvent_list) == 1: solvent = df.loc[solvent_list[0]]
+            else: solvent = None
+            dfpath = suggested_path(df[data_filter], ref_solvent = solvent)
+            figure['data'][0] = solvents_trace(dfpath, show_path = True)
+            # Updates based on the data excluded
+            dff = dfpath[list(TABLE_COLUMNS.values())]
+            figure['layout']['scene']['annotations'] = create_annotations(dfpath)
+            
+        else:
+            dff = df
+            error_path = 'ERROR: You MUST define the solute coordinates.'
     # If the sorting button have been clicked, it sorts according to the action (ascending or descending)
     # if not, sorts by the ascending distance in the Hansen space, by default
     if len(sort_by):
@@ -492,7 +527,7 @@ def display_virtual_solvent(n_clicks, sort_by, figure, dD, dP, dH, greenness,ndi
     
     dfs = dfs[:ndistance]
     
-    return figure, dfs.to_dict('records'), greenness, ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange
+    return figure, dfs.to_dict('records'), greenness, ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange, error_path
 
 
 # I need this lines to upload the images

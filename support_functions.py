@@ -8,67 +8,75 @@ import numpy as np
 import dash_html_components as html
 from pandas import read_excel
 import plotly.graph_objs as go
-HANSEN_COORDINATES = ['dD - Dispersion','dP - Polarity','dH - Hydrogen bonding']
 
+HANSEN_COORDINATES = ['dD - Dispersion','dP - Polarity','dH - Hydrogen bonding']
 
 df2 = read_excel('solventSelectionTool_table.xlsx', sheet_name = 1, header = 0, usecols=(0,1))
 df2.set_index('Statements', inplace=True, drop=True)
 
-
-def solvents_trace(df, show_path = False, filter_solvent = None):
-    """Sets the data for the main trace in the green-solvent program"""
-    if filter_solvent is None:
-        fdf = df
-    else:
-       fdf = df[filter_solvent]
+def solvents_trace(df, show_path = False):
+    """
+    Creates the the main trace in the green-solvent program. It needs:
+        - df: a DataFrame structure with the solvent info
+        - show_path: if True, it will plot a line between the solvent from the df structure in the input order
+    Returns:
+        A trace, as a plotly object
+    """
        
-    x = fdf['dD - Dispersion']
-    y = fdf['dP - Polarity']
-    z = fdf['dH - Hydrogen bonding']
-    costumdata = fdf[['Melting Point (°C)', 'Boiling Point (°C)', 'Ra']]    
-    if fdf['Ra'].isnull().any():
+    x = df['dD - Dispersion']
+    y = df['dP - Polarity']
+    z = df['dH - Hydrogen bonding']
+    
+    costumdata = df[['Melting Point (°C)', 'Boiling Point (°C)', 'Ra']]    
+    
+    if df['Ra'].isnull().all():
+        # If Ra has not been defined, the  hover template looks like this
         hovertemplate = '<b>%{text}</b><br>' +\
                                          '%{hovertext}<br>' +\
                                          'dD = %{x:.2f}<br>dP = %{y:.2f}<br>dH = %{z:.2f} <extra>Ra = n/a <br>mp  = %{customdata[0]:.0f} °C<br>bp  = %{customdata[1]:.0f} °C</extra>'
 #        size = 6
     else:
-
+        # If it has been defined, looks like this
         hovertemplate = '<b>%{text}</b><br>' +\
                                          '%{hovertext}<br>' +\
                                          'dD = %{x:.2f}<br>dP = %{y:.2f}<br>dH = %{z:.2f} <extra>Ra = %{customdata[2]:.1f}<br>mp  = %{customdata[0]:.0f} °C<br>bp  = %{customdata[1]:.0f} °C</extra>'
-    size = 2*np.sqrt(3) * 3**(fdf['Composite score']/6).values
+                                         
+    # Some function that scales the size with the greeness score                                     
+    size = 2*np.sqrt(3) * 3**(df['Composite score']/6).values
     size[np.isnan(size)] = 6
-    size[fdf['Composite score'] < 3] = 6
-    size[fdf['Composite score'] > 9] = 18
-#    print(size)
-#    size = 6
+    size[df['Composite score'] < 3] = 6
+    size[df['Composite score'] > 9] = 18
     
+    # Just print lines when the SHOW PATH has been selected
     if show_path: mode = 'markers+lines'
     else: mode = 'markers'
-    trace = go.Scatter3d(x = x, y = y, z = z,customdata = costumdata, mode=mode, marker=dict( color = fdf['Composite score'],\
-                                                            colorscale = 'RdYlGn',\
-                                                            opacity = 1,
-                                                            showscale = True,
-                                                            cmin = 3,
-                                                            cmid = 6,
-                                                            cmax = 9,
-                                                            colorbar = {'title' : 'Composite<br>    score  ',\
-                                                                        "thickness": 20, "len": 0.66, "x": 0.9, "y": 0.5,  'xanchor': 'center',  'yanchor': 'middle'}
-                                                            ),\
+    
+    trace = go.Scatter3d(x = x, y = y, z = z,\
+                         customdata = costumdata, mode=mode,\
+                         marker=dict(color = df['Composite score'],
+                                    colorscale = 'RdYlGn',
+                                    size = size,
+                                    opacity = 1,
+                                    showscale = True,
+                                    cmin = 3,
+                                    cmid = 6,
+                                    cmax = 9,
+                                    colorbar = dict(title = 'Composite<br>    score  ',\
+                                                thickness = 20, len = 0.66, x = 0.9, y = 0.5,\
+                                                xanchor = 'center',  yanchor = 'middle'),
+                                    line = dict(width = .25, color = 'rgb(50, 50, 50)')
+                                    ),\
                         line = dict(color = 'rgb(50, 50, 50)', width = 3, dash = 'dot'),\
-                        marker_size = size,  marker_line_width = .25,marker_line_color= 'black',\
                         hovertemplate = hovertemplate,
-                        text = fdf['Solvent Name'],\
-                        hovertext = [f'Score  = {value:.1f}' for value in fdf['Composite score']])
+                        text = df['Solvent Name'],\
+                        hovertext = [f'Score  = {value:.1f}' for value in df['Composite score']])
 
     return trace
 
 
-
-
 def update_Ra(hansen_coordinates, reference = [None] * 3):
     """Calculates the Hansen parameter as Ra**2 = 4(dD - dD_0)**2 + (dP - dP_0)**2 + (dH - dH_0)**2.
-        - coordinates: a Dataframe the three Hansen coordinates columns
+        - hansen_coordinates: a DataFrame the three Hansen coordinates columns
         - reference: 3-element vector to which to calculate the distance"""
     for value in reference:
         if value == None:
@@ -145,7 +153,14 @@ def create_report(data = None):
     
     
 def filter_by_hazard(hazards_to_remove, data_hazards):
+    """ 
+    Excludes the solvents with the input hazards:
+        - hazards_to_remove: list with the labels of the hazards to be excluded
+        - data_hazards: DataFrame column with the labels for each solvent
+    """
+        
     hazards_filter = np.ones((data_hazards.shape[0]), dtype = bool)
+    
     for hazard in hazards_to_remove:
 #        print(hazard)
         for i, solvent in enumerate(data_hazards):
@@ -157,6 +172,11 @@ def filter_by_hazard(hazards_to_remove, data_hazards):
     return hazards_filter
 
 def GSK_calculator(df, scores):
+    """ 
+    Updates the compounds score based on the selected scores only
+        - df: DataFrame structure that should contain at least all the scores columns (that is at least 10)
+        - scores: list of scores category, each element containing a list with the subcategories names
+    """
     k = 0
     gmean = 1
     for element in scores:
@@ -170,16 +190,28 @@ def GSK_calculator(df, scores):
     return gmean
 
 def f2s(x):
+    """
+    Just a simple numebr to string function. Needs a number.
+    """
     if x is None:
         x = 0.0
     return f'{x: 3.1f}'
 
 
-def suggested_path(df, ref_solvent = None):
+def suggested_path(df, ref_solvent = None, min_score = 5.0):
+    """
+    This function contains the algorithm that provides the suggested path to 
+    "greeness" paradise. Needs:
+        - df : DataFrame structure with all the necessary columns ('Solvent Name', 'Composite score' and 'Ra' at least)
+        - ref_solvent: if no reference solvent Series is passed, it will filter all the solvents with score < min_score
+        - min_score: minimum score to consider if no ref_solvent is passed
+    Returns:
+        A DataFrame structure with the sorted solvent that will leads you to the greeness paradise
+    """
     flag = True
     solvent_path = []
     if ref_solvent is None:
-        ref_GSK = 5.0 # Minimm GSK score to start the path with
+        ref_GSK = min_score # Minimm GSK score to start the path with
     else:
         ref_GSK = ref_solvent['Composite score']
         solvent_path.append(ref_solvent['Solvent Name'])
@@ -197,22 +229,25 @@ def suggested_path(df, ref_solvent = None):
     return df.loc[solvent_path]
 
 def create_annotations(df):
+    """
+    This function creates the annotations on the positions [dD, dP, dH], enumerating 
+    the solvent on the DataFrame structure:
+        - df: DataFrame structure with the solvents to enumerature, sequentially
+    Returns:
+        A list of dictionaries with the annotations data
+    """
     annotations = []
     k = 0
     for x,y,z in df[HANSEN_COORDINATES].values:
         annotations.append(
             dict(showarrow=False,
-                            x = x,
-                            y = y,
-                            z = z,
-                            text=f'{k+1}',
-                            xshift = 10,
-                            yshift = 10,
-                            font=dict(
-                                color="black",
-                                size=14
-                            ),
-    
-                        ))
+                    x = x,
+                    y = y,
+                    z = z,
+                    text = f'{k+1}',
+                    xshift = 10,
+                    yshift = 10,
+                    font=dict(color="black",size=14)
+                ))
         k += 1
     return annotations

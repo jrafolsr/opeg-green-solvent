@@ -13,19 +13,21 @@ from support_functions import update_Ra, create_report, solvents_trace, df2,filt
 # Folder where I can find the local resources, such as images
 STATIC_PATH = 'static'
 
-
 # Main stylesheet, so far, fetching it from an open source webpage
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 # I start the dash object instance, saved in the variable app
 app = dash.Dash(__name__, external_stylesheets = external_stylesheets)
 
 server = app.server # No sure that this line is necessaru, not sure what it does...
+
 #------------------- LOADING THE DATA -------------------------------------------
 # Loading the Excel file with all the solvents and its properties (first sheet)
 # The data is loaded in a DataFrame structure (see pandas library)
 df = pd.read_excel('solventSelectionTool_table.xlsx', sheet_name = 0, header = 2)
 df.set_index('Solvent Name', inplace=True, drop=False) # The column name is set as a index, not sure is the wisest option
 df = df[1:] # Here I am manually dropping the first row, as it is empty
+
+
 ##----------------- DEFINITION OF SOME GLOBAL VARIABLES -------------------------
 # Now I put on different lists the columns that are somehow subgroups, which will make it easier to call them later on
 HANSEN_COORDINATES = ['dD - Dispersion','dP - Polarity','dH - Hydrogen bonding'] # Columns' namesdefining the Hansen coordinates
@@ -44,52 +46,44 @@ df['Ra'] = update_Ra(df[HANSEN_COORDINATES])
 df['GSK score'] = GSK_calculator(df, [WASTE, HEALTH, ENVIRONMENT, SAFETY])  # This is the GSK score according to the paper
 df['Composite score'] = GSK_calculator(df, [WASTE, HEALTH, ENVIRONMENT, SAFETY]) # This is the composite score, that the user can modify, initial eq. to GSK
 
+
 #----------------CONFIGURING THE INITAL 3D PLOT--------------------------------
 # traces is a list of traces objects. Each trace correspond to a set of data in our plot. We have 3 sets of data
 # (1) solvents, (2) the virtual solute and (3) the highlighted solvents
-traces = [solvents_trace(df,None),
-        go.Scatter3d(x = [], y = [], z =[], mode='markers', marker=dict(color = 'black',
-                                                        symbol = 'circle',\
-                                                        opacity = 1),\
-                                            marker_size=6,\
-                                            text = ['Your solute'],\
-                                            hovertemplate = '<b>%{text}</b><br><br>' +\
-                                     'dD = %{x:.2f}<br>dP = %{y:.2f}<br>dH = %{z:.2f} <extra></extra>'),
-        go.Scatter3d(x = [], y = [], z =[], mode='markers', marker=dict(
-                                                                color = 'red',
-                                                                size = 10,
-                                                                symbol = 'circle-open',\
-                                                                opacity=1.0),\
-                        marker_line_color="red", marker_line_width = 4,\
-                        hoverinfo = 'skip')]
-axis_template = {
-    "showbackground": True,
-    "backgroundcolor": '#F0F0F0',
-    "gridcolor": '#808080',
-    "zerolinecolor": '#808080',
-}
+traces = [solvents_trace(df),
+        go.Scatter3d(x = [], y = [], z =[], mode='markers',
+                    marker=dict(color = 'black',symbol = 'circle', opacity = 1, size = 6),\
+                    text = ['Your solute'],\
+                    hovertemplate = '<b>%{text}</b><br><br>' +\
+                                    'dD = %{x:.2f}<br>dP = %{y:.2f}<br>dH = %{z:.2f} <extra></extra>'),
+        go.Scatter3d(x = [], y = [], z =[], mode='markers',
+                     marker=dict(color = 'red', size = 10, symbol = 'circle-open', opacity=1.0,\
+                                 line = dict(color = 'red', width = 4)),\
+                     hoverinfo = 'skip')]
+# Defining axis template        
+axis_template = dict(showbackground = True, backgroundcolor = '#F0F0F0', gridcolor = '#808080', zerolinecolor = '#808080')
 
-plot_layout = go.Layout(title = {'text': 'Hansen Space<br>dD = ' + f2s(0) + '  dP = ' + f2s(0) + '  dH = ' + f2s(0),\
-                                 'y':0.9,'x':0.5, 'xanchor': 'center', 'yanchor': 'top',\
-                                 'font' : {'size' : 20, 'family' :  'Arial', 'color' : 'rgb(50, 50, 50)'}},
+plot_layout = go.Layout(title = dict(text = 'Hansen Space<br>dD = ' + f2s(0) + '  dP = ' + f2s(0) + '  dH = ' + f2s(0),\
+                                     y = 0.9, x = 0.5, xanchor = 'center', yanchor = 'top',\
+                                     font  = dict(size = 20, family = 'Arial', color = 'rgb(50, 50, 50)')),
                         font = {'size' : 11},
                         paper_bgcolor= '#F0F0F0',
                         plot_bgcolor = '#F0F0F0',
-                        margin =  {"t": .25, "b": .25, "l": .25, "r": .25},
-                        hoverlabel = {'bgcolor' : 'black', 'font' : {'color': 'white'}}, 
-                        scene={"aspectmode": "cube",
-#                               "aspectratio" : {'x' : 1, 'y' : 2, 'z' : 2},
-                               "xaxis": {"title": 'Dispersion (MPa)<sup>1/2</sup>', **axis_template},
-                               "yaxis": {"title": 'Polarity (MPa)<sup>1/2</sup>', **axis_template },
-                               "zaxis": {"title":'Hydrogen bonding (MPa)<sup>1/2</sup>', **axis_template },
-                               "camera": {"eye": {"x": 1.5, "y": 1.5, "z": 0.1}}
-                               },
+                        margin =  dict(t =  .25, b =  .25,l =  .25, r =  .25),
+                        hoverlabel = dict(bgcolor =  'black', font = {'color': 'white'}), 
+                        scene= dict(aspectmode = "cube",
+#                               aspectratio = {'x' : 1, 'y' : 2, 'z' : 2},
+                               xaxis = dict(title = 'Dispersion (MPa)<sup>1/2</sup>', **axis_template),
+                               yaxis = dict(title =  'Polarity (MPa)<sup>1/2</sup>', **axis_template ),
+                               zaxis = dict(title = 'Hydrogen bonding (MPa)<sup>1/2</sup>', **axis_template),
+                               camera = {"eye": {"x": 1.5, "y": 1.5, "z": 0.1}}
+                               ),
                         showlegend = False,
                         clickmode =  'event+select',
                         autosize = True)
 
 # Some of the callbacks will not exist at the beginning of the page.... check on that.
-app.config['suppress_callback_exceptions']=True
+app.config['suppress_callback_exceptions'] = True
 
 
 # Some text saved in variables
@@ -149,24 +143,15 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                     {'if': {'column_id': 'Solvent Name'},
                         'textAlign': 'left','width': '20px','maxWidth': '100px'
                     }],
-                    style_table={'overflowY': 'scroll',
-                                 'overflowX': 'auto',
-                                 'height' : '300px',
-                                 'maxHeight': '400px',
-                                 'minWidth': '300px',
-                                 'width': '100%',
-                                 'maxWidth': '800px',
-                                 'border': 'thin lightgrey solid'},
-                    style_cell={'minWidth': '0px', 'width': '20px','maxWidth': '75px', 'text-align':'center','textOverflow': 'ellipsis'
-                                },
-#                        style_data_conditional = [  {
-#                            'if': {
-#                                'column_id': 'Solvent Name',
-#                                'filter_query': '{Composite score} > 6'
-#                            },
-#                            'backgroundColor': '#3D9970',
-#                            'color': 'white',
-#                        }],
+                    style_table= dict(overflowY = 'scroll',
+                                 overflowX = 'auto',
+                                 height = '300px',
+                                 maxHeight = '400px',
+                                 minWidth = '300px',
+                                 width = '100%',
+                                 maxWidth = '800px',
+                                 border = 'thin lightgrey solid'),
+                    style_cell = {'minWidth': '0px', 'width': '20px','maxWidth': '75px', 'text-align':'center','textOverflow': 'ellipsis'},
                     )
                 ], style = {'margin-top' : '20px', 'align-content': 'center', 'text-align' : 'center'}
             ),  
@@ -184,7 +169,7 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                                         id='button-reset',
                                         title = 'Click here to Reset the app',
                                         n_clicks = 0,
-                                        n_clicks_timestamp = -1),                                        
+                                        n_clicks_timestamp = -2),                                        
                            ]),                     
                         html.Div(id = 'hansen-div', className = 'main-inputs-container',  children = [
                             html.P(['Type the ', html.Span('HSP', title = 'Hansen solubility parameters', className = 'hover-span'),' coordinates of your solute...']),
@@ -336,19 +321,14 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
         ], style = {'width' : '100%'})
 ] )
 
-#@app.callback(Output('button-update', 'n_clicks'),
-#              [Input('button-reset', 'n_clicks')]
-#        )
-#def reset_all(n_clicks):
-#    return 0
-
-
+# Updates the  information on the temperature filter
 @app.callback(
     dash.dependencies.Output('output-temperature-slider', 'children'),
     [dash.dependencies.Input('temperatures-range-slider', 'value')])
 def update_temperature_output(value):
     return 'You have solvents between bp of {}°C and {} °C'.format(*value)
 
+# Updates the input boxes based on the solvent selected in the list
 @app.callback([Output('dD-input', 'value'),
                Output('dP-input', 'value'),
                Output('dH-input', 'value')],
@@ -365,21 +345,23 @@ def update_hansen_parameters_by_list(solvent_list, dD, dP, dH):
         
     return  dD, dP, dH
 
-
+# Creates the report of the selected solvent
 @app.callback(Output('report', 'children'),
              [Input('table','selected_rows')],
              [State('table','data'),
               State('table','columns')])
 def update_report(selected_row, data, columns):
     if selected_row == []:
+        # No solvent selected, emty report
         return create_report()
     else:
-        # I first take the name of the selected Solvent
+        # I first take the name of the selected Solvent (only one is allowed to be selected)
         n = selected_row[0]
         name_solvent = data[n]['Solvent Name'] # Selecet the name of the solvent from the key:" Solvent name"
         
         return create_report(df.loc[name_solvent])
-
+    
+# If a solvent is clicked on the graph, it updates selects the same solvent from the table (and therefore, creates a report)
 @app.callback(Output('table', 'selected_rows'),
               [Input('main-plot', 'clickData')],
               [State('table', 'data')])
@@ -396,7 +378,7 @@ def update_selected_solvent(clicked_data, data):
             selected_rows = [i]
     return selected_rows
 
-
+# updates text from the greeness filter
 @app.callback([Output('greenness-indicator', 'children'),
               Output('table', 'sort_by')],
              [Input('greenness-filter','value')])
@@ -404,13 +386,13 @@ def update_GSK_filter(value):
     sort_by = [{'column_id': 'Ra', 'direction': 'asc'}]
     return f'Composite score > {value:d}', sort_by
 
-
+# Updates text from the number-of-solvents filter
 @app.callback(Output('distance-filter-text', 'children'),
              [Input('distance-filter','value')])
 def update_distance_filter(value):
     return f'Shows only the {value:d}-first closest solvents:'
 
-
+# Main callaback, which gathers all the info and responds to it
 @app.callback([Output('main-plot', 'figure'),
                Output('table', 'data'),
                Output('greenness-filter','value'),
@@ -449,56 +431,69 @@ def display_virtual_solvent(update,reset,path, sort_by, figure, dD, dP, dH, gree
         
     # Change the title, which contains the current values for dP, dD and dH
     figure['layout']['title']['text'] = 'Hansen Space<br>dD = ' + f2s(dD) + '  dP = ' + f2s(dP) + '  dH = ' + f2s(dH)
-    # Updates based on the new Hansen coordinates
+    
+    # Updatesthe Ra based on the new Hansen coordinates
     df['Ra'] = update_Ra(df[HANSEN_COORDINATES], [dD,dP,dH])
-    figure['data'][1]['x'] = [dD] if dD != None else []
-    figure['data'][1]['y'] = [dP] if dP != None else []
-    figure['data'][1]['z'] = [dH] if dH != None else []
-
-    # Update the composite score based on the labels the user selected
-#    print('This items have been excluded for the GSK_score values')
-#    [print(item) for item in WASTE if item not in waste]
-#    [print(item) for item in HEALTH if item not in health]
-#    [print(item) for item in ENVIRONMENT if item not in environment]
-#    [print(item) for item in SAFETY if item not in safety]
-    df['Composite score'] = GSK_calculator(df, [waste, health, environment, safety])
-#    print('The GSK score has been updated')
-    
-    
+    #    Update the trace that shows the "Virtual solvent" in case it is not one from the list
     if len(solvent_list) > 1:
+        figure['data'][1]['x'] = [dD] if dD != None else []
+        figure['data'][1]['y'] = [dP] if dP != None else []
+        figure['data'][1]['z'] = [dH] if dH != None else []
+
+    #    Update the trace that highlights the selected solvents"    
+    if len(solvent_list) >= 1:
         x, y, z = [],[],[]
         for solvent in solvent_list:
             t, tt, ttt =  df[HANSEN_COORDINATES].loc[solvent]
             x.append(t), y.append(tt), z.append(ttt)
     else:
         x, y, z = dD, dP, dH
+
     figure['data'][2]['x'] = x
     figure['data'][2]['y'] = y
     figure['data'][2]['z'] = z
     
-    # Updates based on the greeness filter
+
+#    print('This items have been excluded for the GSK_score values')
+#    [print(item) for item in WASTE if item not in waste]
+#    [print(item) for item in HEALTH if item not in health]
+#    [print(item) for item in ENVIRONMENT if item not in environment]
+#    [print(item) for item in SAFETY if item not in safety]
+    #   Updates the composite score based on the labels the user selected    
+    df['Composite score'] = GSK_calculator(df, [waste, health, environment, safety])
+#    print('The GSK score has been updated')
+  
+    # Now, we creat ethe filters for the data to show   
+    # 1. Create the greeness filter
     if greenness > 0:
         greenness_filter = df['Composite score'] > greenness
     else:
         greenness_filter = True
-    # Creates the hazard filter
+    # 2. Creates the hazard filter
     hazard_filter = filter_by_hazard(hazard_list, df['Hazard Labels'])
-    # Creates the boiling temperature filter based in the range slider
+    
+    # 3. Creates the boiling temperature filter based in the range slider
     temperature_filter = (df['Boiling Point (°C)'] > Trange[0]) & (df['Boiling Point (°C)'] < Trange[1])
-    # AND product of allt he filters, only the all True will survive
+    # 4. Creates the overall filter, an AND product of all he filters (only the all True will survive)
     data_filter = greenness_filter & hazard_filter & temperature_filter
     
-    # Send the data to plot with the filter and only the n-first values
-    # OBS: needs some error managign in the cas of ndistance > the filtered data
-    error_path = ''
+
+    
+    error_path = '' # Error message in the case that we haven't defined the Ra yet
+    
+    # If show path has not been cliecked, just plot the data with the applied filters
     if update >= path or reset >= path:
+        # Updating hte first trace (main one) by with the data filtered and only the n-first values
+        # OBS: needs some error managing in the cas of ndistance > the filtered data        
         figure['data'][0] = solvents_trace(df[data_filter].sort_values('Ra')[:ndistance])
-        # Updates based on the data excluded
+        # Updating the table based on the filtered data 
         dff = df[list(TABLE_COLUMNS.values())][data_filter]
+        # No annotations
         figure['layout']['scene']['annotations'] = []
+        
     else:
-        # Is the distance defined?
-        RA_EXIST =  not df['Ra'].isnull().all()
+        # SHOW PATH has been clicked. Now, has the the distance been defined?
+        RA_EXIST =  not df['Ra'].isnull().all() # Check if all the values are null (meanning Ra is not defined)
         if RA_EXIST:
             # Add here the PATH algorithm
             if len(solvent_list) == 1: solvent = df.loc[solvent_list[0]]
@@ -510,8 +505,11 @@ def display_virtual_solvent(update,reset,path, sort_by, figure, dD, dP, dH, gree
             figure['layout']['scene']['annotations'] = create_annotations(dfpath)
             
         else:
-            dff = df
+            # It has not been defined, so just plot the data based on the filters
+            dff = df[data_filter][:ndistance]
+            # Update the error message and show the user what she should do
             error_path = 'ERROR: You MUST define the solute coordinates.'
+            
     # If the sorting button have been clicked, it sorts according to the action (ascending or descending)
     # if not, sorts by the ascending distance in the Hansen space, by default
     if len(sort_by):

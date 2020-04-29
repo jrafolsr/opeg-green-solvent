@@ -9,3 +9,130 @@
     padding-left: 5px;
 }
 
+/*-------- Hovering stuff ------- */
+
+.hover-span {
+  margin-bottom: 0;
+  border-bottom: 1px dotted black; 
+}
+.tooltip {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 0;
+  border-bottom: 1px dotted black;
+  
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: max-content;
+  max-width: 250px;
+  background-color: #fffbf2;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 5px;
+  position: absolute;
+  z-index: 1;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -60px;
+  font-size: small;
+  border-color: black;
+  /* Fade in tooltip - takes 1 second to go from 0% to 100% opac: */
+  opacity: 0;
+  transition: opacity 1s;  
+}
+.tooltip .tooltiptext::after {
+  content: " ";
+  position: absolute;
+  top: 100%; /* At the bottom of the tooltip */
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #fffbf2 transparent transparent transparent;
+}
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+/* ----------------------- */
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.column {
+  margin-left : 10px;
+  margin-right : 10px;
+  float: left;
+}
+
+.left {
+  width: 30%;
+
+}
+
+.middle {
+
+  width: 42%;
+}
+
+.right {
+  width: 22.5%;
+}
+
+
+.buttons-container {
+  width: 100%;
+  align-content: center;
+  text-align: center;
+  display: inline-block;
+  vertical-align: middle;
+  margin-bottom: 10px;
+  margin-top: 25px;
+}
+
+.button, button{
+	width: 120px;
+	max-width: 200px;
+	background-color: #C0C0C0;
+    margin-left : 20px;
+	margin-right : 20px;
+	display : inline-block
+}
+
+.main-inputs-container {
+	width : 100%;
+	vertical-align: top;
+	text-align: left;
+	border-radius: 4px;
+    border: 1px solid #bbb;
+    box-sizing: border-box;
+	padding-left: 10px;
+	margin-bottom: 10px;
+	padding: 5px;
+	background-color:  #DCDCDC;
+	font-size: small;
+}
+
+.big-container {
+    width : 100%;
+	vertical-align: top;
+	text-align: left;
+	border-radius: 4px;
+    border: 1px solid #bbb;
+    box-sizing: border-box;
+	margin-bottom: 10px;
+	margin-top: 10px;
+	padding: 10px;
+	background-color:  #DCDCDC;
+	font-size: small;
+}
+
+.big-container .filters-type {
+	width : 100%;
+	vertical-align: top;
+	text-align: left;
+}

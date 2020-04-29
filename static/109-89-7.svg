@@ -1,0 +1,12 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="145px" height="43px" viewBox="0 0 145 43" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" >
+<text x="0" y="0" stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 67.7667 28.9904)" style="font:normal normal normal 200px 'Arial'" >
+N</text>
+<text x="0" y="0" stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 67.7667 40.1127)" style="font:normal normal normal 200px 'Arial'" >
+H</text>
+<path stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 -287.433 -458.433)" d="M 4365.77,7242.02 L 4355.77,7224.7 L 4880.38,6921.81 L 4880.38,6944.9 L 4365.77,7242.02 Z " />
+<path stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 -287.433 -458.433)" d="M 4880.38,6944.9 L 4880.38,6921.81 L 5301.15,7164.74 L 5291.15,7182.06 L 4880.38,6944.9 Z " />
+<path stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 -287.433 -458.433)" d="M 6444.23,7224.7 L 6434.23,7242.02 L 5919.62,6944.9 L 5919.62,6921.81 L 6444.23,7224.7 Z " />
+<path stroke="transparent" fill="#000000" transform="matrix(0.0666667 0 0 0.0666667 -287.433 -458.433)" d="M 5919.62,6921.81 L 5919.62,6944.9 L 5508.85,7182.06 L 5498.85,7164.74 L 5919.62,6921.81 Z " />
+</svg>

@@ -87,11 +87,11 @@ app.config['suppress_callback_exceptions'] = True
 
 
 # Some text saved in variables
-INTRO_TEXT = [html.Summary(html.B('HOW DOES IT WORK?')),\
-              html.P(['This app is design to help you identify functional and environmentally green solvents. The likelihood to be functional is based on ',
-              html.Span('Hansen solubility parameters (HSP)', title = 'Dispersion (dD), Polarity (dP) and Hydrogen bonding (dH)', className = 'hover-span'),', where a shorter distance ', html.Span('(Ra)', title = r'Ra = [4(dD2 - dD1)^2 + (dP2 - dP1)^2 + (dH2 - dH1)^2]^(1/2)', className = 'hover-span'),' in Hansen space correspond to a more similar solvent. The greenness score is based on the GlaxoSmithKline (GSK) solvent sustainability guide, where a higher composite score is a greener alternative.']),\
+INTRO_TEXT = [html.Summary(html.B('How does it work?')),\
+              html.P(['This app is designed to help you identify functional and environmentally green solvents. The likelihood to be functional is based on ',
+              html.Span('Hansen solubility parameters (HSP)', title = 'Dispersion (dD), Polarity (dP) and Hydrogen bonding (dH)', className = 'hover-span'),', where a shorter distance in Hansen space ',  html.Span('(Ra)', title = r'Ra = [4(dD2 - dD1)^2 + (dP2 - dP1)^2 + (dH2 - dH1)^2]^(1/2)', className = 'hover-span'), ' correspond to a more similar solvent. The greenness score is based on the GlaxoSmithKline (GSK) solvent sustainability guide, where a higher composite score is a greener alternative.']),\
               html.P(['(1) Use the right panel to either enter the ', html.B('HSP coordinates'),' of your solute directly, or estimate it from known functional ', html.B('solvent(s)'),' using the dropdown menu. Then click ', html.B('UPDATE.')]),\
-              html.P(['(2) The position of your solute is shown in the ',html.B('HANSEN SPACE.'), ' Use the graph to explore neighboring solvents. Find more information about certain solvent by clicking on it, or selecting it from the table. The color and size guides you in a sustainable direction.']),
+              html.P(['(2) The position of your solute is shown in the ',html.B('HANSEN SPACE.'), ' Use the graph to explore neighboring solvents. Find more information about certain solvent by clicking on it, or selecting it from the table. The ', html.B('color and size'), ' guides you in a sustainable direction.']),
               html.P(['(3) The ', html.B('SELECTION TABLE'),' ranks the solvents based on the distance Ra to your solute, and specifies the composite score and other useful information solvents.'])]
 
 REFERENCES_TEXT = ['Hansen solubility ', html.A('theory and parameters', href = 'https://www.stevenabbott.co.uk/practical-solubility/hsp-basics.php', target='_blank'), ' (Last accessed: 2018-10-22)', \
@@ -158,7 +158,7 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
         ]),
         #---------- Third column, where the plot and filter options go-----------
         html.Div(className = 'column right', children = [
-                        html.Div(id = 'HSP-values', children = [None, None, None], hidden = True),
+                        html.Div(id = 'HSP-values', children = [None, None, None], hidden = False),
                         html.Div(id = 'buttons-div', className  = 'buttons-container', children = [
                             html.Button('UPDATE',
                                         id='button-update',
@@ -170,54 +170,61 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                                         title = 'Click here to Reset the app',
                                         n_clicks = 0,
                                         n_clicks_timestamp = -2),                                        
-                           ]),                     
-                        html.Div(id = 'hansen-div', className = 'main-inputs-container',  children = [
-                            html.P(['Type the ', html.Span('HSP', title = 'Hansen solubility parameters', className = 'hover-span'),' coordinates of your solute...']),
-                                html.Div(style = {'width': 'max-content','text-align' : 'right', 'margin-left': 'auto',
-  'margin-right': 'auto'}, children = [
-                                html.P(['Dispersion:  ',
-                                    dcc.Input(
-                                        id = "dD-input",
-                                        name = 'dD',
-                                        type = 'number',
-                                        placeholder="dD",
-                                        style = {'width' : '80px'},
-                                    ), ' (MPa)', html.Sup('1/2')]),
-            
-                                html.P(['Polarization: ',
-                                    dcc.Input(
-                                        id = "dP-input",
-                                        type = 'number',
-                                        placeholder="dP",
-                                        style = {'width' : '80px'},
-                                    ), ' (MPa)', html.Sup('1/2')]),
-                                html.P(['H bonding:  ',
-                                    dcc.Input(
-                                        id = "dH-input",
-                                        type = 'number',
-                                        placeholder="dH",
-                                        style = {'width' : '80px'},
-                                    ), ' (MPa)', html.Sup('1/2')
+                           ]),
+                        html.Div(id = 'radiobutton-div', className ='main-inputs-container', children = [
+                            dcc.RadioItems(
+                                    id = 'radiobutton-route',
+                                    options=[
+                                        {'label': 'Type the HSP of your solute', 'value': 0},
+                                        {'label': 'Select the known functional solvent(s) of your solute', 'value': 1}
+                                    ],
+                                    value = 0,
+                                    style = {'margin-bottom' : '10px'}),                              
+                            html.Div(id = 'hansen-div', children = [
+                                    html.Div(style = {'width': 'max-content','text-align' : 'right', 'margin-left': 'auto',
+      'margin-right': 'auto'}, children = [
+                                    html.P(['Dispersion:  ',
+                                        dcc.Input(
+                                            id = "dD-input",
+                                            name = 'dD',
+                                            type = 'number',
+                                            placeholder="dD",
+                                            style = {'width' : '80px'},
+                                        ), ' (MPa)', html.Sup('1/2')]),
+                
+                                    html.P(['Polarization: ',
+                                        dcc.Input(
+                                            id = "dP-input",
+                                            type = 'number',
+                                            placeholder="dP",
+                                            style = {'width' : '80px'},
+                                        ), ' (MPa)', html.Sup('1/2')]),
+                                    html.P(['H bonding:  ',
+                                        dcc.Input(
+                                            id = "dH-input",
+                                            type = 'number',
+                                            placeholder="dH",
+                                            style = {'width' : '80px'},
+                                        ), ' (MPa)', html.Sup('1/2')
+                                    ])
                                 ])
-                            ])
+                            ]),
+                            html.Div(id = 'solvent-list-div', hidden = True, children = [
+                                dcc.Dropdown(
+                                    id='solvent-list',
+                                    options=[{'label': name, 'value': i} for name,i in zip(df['Solvent Name'],df.index)],
+                                    value = [],
+                                    placeholder = "Choose a solvent...",
+                                    multi = True,
+                                )] 
+                           ),
                         ]),
-                        html.Div(id = 'solvent-list-div', className = 'main-inputs-container', children = [
-                            html.P('...or alternatively, select from the list the known functional solvent(s) of your solute:',\
-                                   title = 'Will be marked with red circles in the plot'),
-                            dcc.Dropdown(
-                                id='solvent-list',
-                                options=[{'label': name, 'value': i} for name,i in zip(df['Solvent Name'],df.index)],
-                                value = [],
-                                placeholder = "Choose a solvent...",
-                                multi = True,
-                            )] 
-                       ),
                         html.Div(['The solvents in the ', html.B('SELECTION TABLE'), ' are ranked with increasing distance (Ra) to the defined solute (black circle). For a functional and sustainable solvent, ',html.Em(['"the closer and ', html.B('the greener'), ' the better".']),\
                                   html.P('You can also refine the solvent selection by applying the following filters:')],
                                          style = {'font-size' : 'small', 'margin-bottom' : '10px'}),
                         html.Div(id = 'filters-div', children = [
                             html.Details(className = 'main-inputs-container',  title = 'Suggested route', children = [
-                                html.Summary(html.B(['Suggested path to green paradise'])),  
+                                html.Summary(html.B(['Suggested path for testing solvents'])),  
                                 html.Div(id = 'path-div',className = 'filters-type', children = [
                                     html.P(f'Proposed path to find the greenest functional solvent :'),
                                     html.Button('SHOW PATH',
@@ -265,7 +272,7 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                                     html.P('Remove solvents with the following hazard labels:'),
                                     dcc.Dropdown(
                                         id = 'hazard-list',
-                                        options=[{'label': label, 'value': label} for text, label in zip(df2['Fulltext'][2:48],df2.index[2:48])],
+                                        options=[{'label': label + f': {text}', 'value': label} for text, label in zip(df2['Fulltext'][2:48],df2.index[2:48])],
                                         value = [],
                                         placeholder = "Remove hazards...",
                                         multi = True,
@@ -328,22 +335,15 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
 def update_temperature_output(value):
     return 'You have solvents between bp of {}°C and {} °C'.format(*value)
 
-# Updates the input boxes based on the solvent selected in the list
-@app.callback([Output('dD-input', 'value'),
-               Output('dP-input', 'value'),
-               Output('dH-input', 'value')],
-            [Input('solvent-list', 'value')],
-           [State('dD-input', 'value'),
-           State('dP-input', 'value'),
-           State('dH-input', 'value')])
-def update_hansen_parameters_by_list(solvent_list, dD, dP, dH):   
-    N = len(solvent_list)
-    if N == 0:
-        dD, dP, dH = None, None, None
-    else: 
-        dD, dP, dH = df[HANSEN_COORDINATES].loc[solvent_list].mean().round(2)
-        
-    return  dD, dP, dH
+# Selector of the method to choose your solute parameters, hides/shows the Input
+@app.callback([Output('hansen-div', 'hidden'),
+               Output('solvent-list-div', 'hidden')],
+            [Input('radiobutton-route', 'value')])
+def show_input_method(method):
+    if method == 1:
+        return True, False
+    else:
+        return False, True 
 
 # Creates the report of the selected solvent
 @app.callback(Output('report', 'children'),
@@ -404,12 +404,17 @@ def update_distance_filter(value):
                Output('checklist-environment', 'value'),
                Output('checklist-safety', 'value'),
                Output('temperatures-range-slider', 'value'),
+               Output('radiobutton-route', 'value'),
+               Output('dD-input', 'value'),
+               Output('dP-input', 'value'),
+               Output('dH-input', 'value'),
                Output('error-path', 'children')],
               [Input('button-update', 'n_clicks_timestamp'),
                Input('button-reset', 'n_clicks_timestamp'),
                Input('button-path', 'n_clicks_timestamp')],
               [State('table', 'sort_by'),
                State('main-plot', 'figure'),
+               State('radiobutton-route', 'value'),
                State('dD-input', 'value'),
                State('dP-input', 'value'),
                State('dH-input', 'value'),
@@ -421,21 +426,33 @@ def update_distance_filter(value):
                State('checklist-health', 'value'),
                State('checklist-environment', 'value'),
                State('checklist-safety', 'value'),
-               State('temperatures-range-slider', 'value'),
-               State('HSP-values', 'children')])
-def display_virtual_solvent(update,reset,path, sort_by, figure, dD, dP, dH, greenness,ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange, HSP):
+               State('temperatures-range-slider', 'value')])
+def display_virtual_solvent(update,reset,path, sort_by, figure,method, dD, dP, dH, greenness,ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange):
+    
     # If the Reset button is click, reinitialize all the values
     if reset >=  update:
-        sort_by, dD, dP, dH, greenness, ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange = \
-        [], None, None, None, 0, N_SOLVENTS, [], [], WASTE, HEALTH, ENVIRONMENT, SAFETY, TEMPERATURE_RANGE
+        sort_by, dD, dP, dH, greenness, ndistance,method, hazard_list, waste, health, environment, safety, Trange = \
+        [], None, None, None, 0, N_SOLVENTS, 0, [], WASTE, HEALTH, ENVIRONMENT, SAFETY, TEMPERATURE_RANGE
+    
+    # Choose the HSP based on the selected method by the user
+    if method == 0:
+        dDinput, dPinput, dHinput =  dD, dP, dH
+        solvent_list = []
+    else:
+        dDinput, dPinput, dHinput =  None, None, None
+        if len(solvent_list):
+            dD, dP, dH = df[HANSEN_COORDINATES].loc[solvent_list].mean().round(2)
+        else:
+            dD, dP, dH = None, None, None
         
+    
     # Change the title, which contains the current values for dP, dD and dH
     figure['layout']['title']['text'] = 'Hansen Space<br>dD = ' + f2s(dD) + '  dP = ' + f2s(dP) + '  dH = ' + f2s(dH)
     
     # Updatesthe Ra based on the new Hansen coordinates
     df['Ra'] = update_Ra(df[HANSEN_COORDINATES], [dD,dP,dH])
     #    Update the trace that shows the "Virtual solvent" in case it is not one from the list
-    if len(solvent_list) > 1:
+    if (len(solvent_list) > 1) or  (len(solvent_list) == 0):
         figure['data'][1]['x'] = [dD] if dD != None else []
         figure['data'][1]['y'] = [dP] if dP != None else []
         figure['data'][1]['z'] = [dH] if dH != None else []
@@ -525,7 +542,7 @@ def display_virtual_solvent(update,reset,path, sort_by, figure, dD, dP, dH, gree
     
     dfs = dfs[:ndistance]
     
-    return figure, dfs.to_dict('records'), greenness, ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange, error_path
+    return figure, dfs.to_dict('records'), greenness, ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange, method, dDinput, dPinput, dHinput, error_path
 
 
 # I need this lines to upload the images

@@ -198,7 +198,7 @@ def f2s(x):
     return f'{x: 3.1f}'
 
 
-def suggested_path(df, ref_solvent = None, min_score = 5.0):
+def suggested_path(df, ref_solvent = None, min_score = 1.0):
     """
     This function contains the algorithm that provides the suggested path to 
     "greeness" paradise. Needs:

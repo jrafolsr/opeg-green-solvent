@@ -430,7 +430,7 @@ def update_distance_filter(value):
 def display_virtual_solvent(update,reset,path, sort_by, figure,method, dD, dP, dH, greenness,ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange):
     
     # If the Reset button is click, reinitialize all the values
-    if reset >=  update:
+    if (reset >  update) & (reset > path):
         sort_by, dD, dP, dH, greenness, ndistance,method, hazard_list, waste, health, environment, safety, Trange = \
         [], None, None, None, 0, N_SOLVENTS, 0, [], WASTE, HEALTH, ENVIRONMENT, SAFETY, TEMPERATURE_RANGE
     
@@ -448,7 +448,6 @@ def display_virtual_solvent(update,reset,path, sort_by, figure,method, dD, dP, d
     
     # Change the title, which contains the current values for dP, dD and dH
     figure['layout']['title']['text'] = 'Hansen Space<br>dD = ' + f2s(dD) + '  dP = ' + f2s(dP) + '  dH = ' + f2s(dH)
-    
     # Updatesthe Ra based on the new Hansen coordinates
     df['Ra'] = update_Ra(df[HANSEN_COORDINATES], [dD,dP,dH])
     #    Update the trace that shows the "Virtual solvent" in case it is not one from the list

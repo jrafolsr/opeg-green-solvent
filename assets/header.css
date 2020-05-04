@@ -63,6 +63,27 @@
   display: table;
   clear: both;
 }
+
+
+.fixed-footer{
+        width: auto;
+        position: fixed;
+        background: #333;
+
+        color: #fff;
+		bottom: 0;
+    }
+
+.footer-col{
+	padding: 10px 10px;
+	display: inline-block;
+	font-size : xx-small;
+	width : max-content;
+	vertical-align: top;
+	padding-right : 20px;
+}	
+	
+	
 .column {
   margin-left : 10px;
   margin-right : 10px;
@@ -71,11 +92,9 @@
 
 .left {
   width: 30%;
-
 }
 
 .middle {
-
   width: 42%;
 }
 

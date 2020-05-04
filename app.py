@@ -94,13 +94,13 @@ INTRO_TEXT = [html.Summary(html.B('How does it work?')),\
               html.P(['(2) The position of your solute is shown in the ',html.B('HANSEN SPACE.'), ' Use the graph to explore neighboring solvents. Find more information about certain solvent by clicking on it, or selecting it from the table. The ', html.B('color and size'), ' guides you in a sustainable direction.']),
               html.P(['(3) The ', html.B('SELECTION TABLE'),' ranks the solvents based on the distance Ra to your solute, and specifies the composite score and other useful information solvents.'])]
 
-REFERENCES_TEXT = ['Hansen solubility ', html.A('theory and parameters', href = 'https://www.stevenabbott.co.uk/practical-solubility/hsp-basics.php', target='_blank'), ' (Last accessed: 2018-10-22)', \
+REFERENCES_TEXT0 = ['Hansen solubility ', html.A('theory and parameters', href = 'https://www.stevenabbott.co.uk/practical-solubility/hsp-basics.php', target='_blank'), ' (Last accessed: 2018-10-22)', \
                      html.Br(),\
                      'GSK green solvent selection data from ',html.A('[1]', href = 'https://pubs.rsc.org/en/content/articlelanding/2016/gc/c6gc00611f', target='_blank'),\
                      ' and ', html.A('[2]', href = 'https://pubs.rsc.org/en/content/articlelanding/2011/gc/c0gc00918k', target='_blank'), html.Br(),\
                      'GHS statements from ', html.A('PubChem', href = 'https://pubchem.ncbi.nlm.nih.gov/', target='_blank'), ' (Last accessed: 2019-05-30)',\
-                     ' and ', html.A('European Chemicals Agency (ECHA) C&L Inventory', href = 'https://echa.europa.eu/information-on-chemicals/cl-inventory-database/', target='_blank'), ' (Last accessed: 2019-05-30)', html.Br(),\
-                     'Find the publication on ', html.A('The Amazing Journal', href = 'https://www.umu.se/globalassets/personalbilder/petter-lundberg/Profilbild.jpg?w=185', target='_blank'), html.Br(),
+                     ' and ', html.A('European Chemicals Agency (ECHA) C&L Inventory', href = 'https://echa.europa.eu/information-on-chemicals/cl-inventory-database/', target='_blank'), ' (Last accessed: 2019-05-30)']
+REFERENCES_TEXT1 = ['Find the publication on ', html.A('The Amazing Journal', href = 'https://www.umu.se/globalassets/personalbilder/petter-lundberg/Profilbild.jpg?w=185', target='_blank'), html.Br(),
                      'Made by the ', html.A('Organic Photonics and Electronics group (OPEG)', href = 'http://www.opeg-umu.se/', target='_blank')] 
 
 
@@ -109,11 +109,10 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
         html.Div(className = 'column left', children = [
             html.H4('Selection of Functional Green Solvent'),
             html.Div(id = 'intro_div', className = 'big-container', children = 
-                    html.Details(INTRO_TEXT, title = 'Click the triangle to open or close the panel', open = 'open')
+                    html.Details(INTRO_TEXT, title = 'Click the triangle to open or close the panel',id = 'div-instructions', open = 'open')
                     ),
             html.Div(id = 'report', className = 'big-container', children = create_report(),
-             style = {'overflow-y': 'auto', 'height' : '400px'}),
-             html.Div([html.Div(html.H6('Sources'), style = {'width' : '25%','display':'inline-block','vertical-align': 'top'}),html.Div(REFERENCES_TEXT, style = {'width' : '70%', 'display':'inline-block','vertical-align': 'top'})], className = 'big-container', style = {'font-size' : 'xx-small'})
+             style = {'overflow-y': 'auto', 'height' : 'auto', 'max-height' : '350px'}),
         ]),
         #----------- Second column, where the plot and table go----------------
         html.Div(className = 'column middle', children = [                     
@@ -325,8 +324,22 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                                 ]),
                         ]),
                     ])
-        ], style = {'width' : '100%'})
-] )
+        ], style = {'width' : '100%', 'height' : 'max-content', 'margin-bottom' : '10px'}),
+        html.Div([html.Div(html.H6('Sources'), className = 'footer-col', style = {'width' : '100px'}),\
+                     html.Div(REFERENCES_TEXT0, className = 'footer-col', style = {'margin-right' : '100px'}),\
+                     html.Div(REFERENCES_TEXT1, className = 'footer-col')],\
+                        className = 'fixed-footer')
+])
+
+# Updates the height o fthe info container based on the Details tabe is open or not
+@app.callback(Output('report', 'style'),
+              [Input('div-instructions', 'n_clicks')])
+def update_report_div_max_length(n):
+#    print(n)
+    if n is None or n % 2 == 0:
+        return  {'overflow-y': 'auto', 'height' : 'auto', 'max-height' : '350px'}
+    else:
+       return  {'overflow-y': 'auto', 'height' : 'auto', 'max-height' : '700px'}
 
 # Updates the  information on the temperature filter
 @app.callback(
@@ -428,15 +441,24 @@ def update_distance_filter(value):
                State('checklist-safety', 'value'),
                State('temperatures-range-slider', 'value')])
 def display_virtual_solvent(update,reset,path, sort_by, figure,method, dD, dP, dH, greenness,ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange):
-    
+    # Determine which button has been clicked
+    ctx = dash.callback_context
+
+    if not ctx.triggered:
+        button_id = 'No clicks yet'
+    else:
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+#    print(button_id)
+        
     # If the Reset button is click, reinitialize all the values
-    if (reset >  update) & (reset > path):
+    if button_id == 'button-reset':
         sort_by, dD, dP, dH, greenness, ndistance,method, hazard_list, waste, health, environment, safety, Trange = \
         [], None, None, None, 0, N_SOLVENTS, 0, [], WASTE, HEALTH, ENVIRONMENT, SAFETY, TEMPERATURE_RANGE
     
     # Choose the HSP based on the selected method by the user
     if method == 0:
         dDinput, dPinput, dHinput =  dD, dP, dH
+        
         solvent_list = []
     else:
         dDinput, dPinput, dHinput =  None, None, None
@@ -451,19 +473,30 @@ def display_virtual_solvent(update,reset,path, sort_by, figure,method, dD, dP, d
     # Updatesthe Ra based on the new Hansen coordinates
     df['Ra'] = update_Ra(df[HANSEN_COORDINATES], [dD,dP,dH])
     #    Update the trace that shows the "Virtual solvent" in case it is not one from the list
-    if (len(solvent_list) > 1) or  (len(solvent_list) == 0):
-        figure['data'][1]['x'] = [dD] if dD != None else []
-        figure['data'][1]['y'] = [dP] if dP != None else []
-        figure['data'][1]['z'] = [dH] if dH != None else []
-
-    #    Update the trace that highlights the selected solvents"    
-    if len(solvent_list) >= 1:
-        x, y, z = [],[],[]
-        for solvent in solvent_list:
-            t, tt, ttt =  df[HANSEN_COORDINATES].loc[solvent]
-            x.append(t), y.append(tt), z.append(ttt)
+    if (len(solvent_list) > 1) or  (method == 0):
+        # Only if the method is by numerical Input or if th list is larger than 1
+        x0 = [dD] if dD != None else []
+        y0 = [dP] if dP != None else []
+        z0 = [dH] if dH != None else []
     else:
-        x, y, z = dD, dP, dH
+        x0,y0,z0 =  [],[],[]
+        
+    figure['data'][1]['x'] = x0
+    figure['data'][1]['y'] = y0
+    figure['data'][1]['z'] = z0
+    
+    #    Update the trace that highlights the selected solvents"
+    if method == 0:
+        # No highling of the solvents, as it is manually input
+        x, y, z = [],[],[]
+    else:
+        if len(solvent_list) >= 1:
+            x, y, z = [],[],[]
+            for solvent in solvent_list:
+                t, tt, ttt =  df[HANSEN_COORDINATES].loc[solvent]
+                x.append(t), y.append(tt), z.append(ttt)
+        else:
+            x, y, z = dD, dP, dH
 
     figure['data'][2]['x'] = x
     figure['data'][2]['y'] = y
@@ -498,7 +531,7 @@ def display_virtual_solvent(update,reset,path, sort_by, figure,method, dD, dP, d
     error_path = '' # Error message in the case that we haven't defined the Ra yet
     
     # If show path has not been cliecked, just plot the data with the applied filters
-    if update >= path or reset >= path:
+    if button_id == 'button-update' or button_id == 'button-reset':
         # Updating hte first trace (main one) by with the data filtered and only the n-first values
         # OBS: needs some error managing in the cas of ndistance > the filtered data        
         figure['data'][0] = solvents_trace(df[data_filter].sort_values('Ra')[:ndistance])
@@ -524,7 +557,7 @@ def display_virtual_solvent(update,reset,path, sort_by, figure,method, dD, dP, d
             # It has not been defined, so just plot the data based on the filters
             dff = df[data_filter][:ndistance]
             # Update the error message and show the user what she should do
-            error_path = 'ERROR: You MUST define the solute coordinates.'
+            error_path = 'First, You MUST define the solute coordinates.'
             
     # If the sorting button have been clicked, it sorts according to the action (ascending or descending)
     # if not, sorts by the ascending distance in the Hansen space, by default

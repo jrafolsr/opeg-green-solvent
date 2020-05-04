@@ -3,3 +3,4 @@ __pycache__/
 ChemDraw/
 ~$solventSelectionTool_table.xlsx
 static/~*.xlsx
+temp.py

@@ -71,6 +71,8 @@
         background: #333;
         color: #fff;
 		bottom: 0;
+		border-radius: 4px;
+		margin: 10px 0;
     }
 
 .footer-col{

@@ -137,7 +137,7 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                     selected_rows = [],
                     sort_by = [],
                     sort_mode = 'single',
-                    sort_action='custom',
+                    sort_action='native',
                     style_cell_conditional=[
                     {'if': {'column_id': 'Solvent Name'},
                         'textAlign': 'left','width': '20px','maxWidth': '100px'
@@ -425,8 +425,7 @@ def update_distance_filter(value):
               [Input('button-update', 'n_clicks_timestamp'),
                Input('button-reset', 'n_clicks_timestamp'),
                Input('button-path', 'n_clicks_timestamp')],
-              [State('table', 'sort_by'),
-               State('main-plot', 'figure'),
+              [State('main-plot', 'figure'),
                State('radiobutton-route', 'value'),
                State('dD-input', 'value'),
                State('dP-input', 'value'),
@@ -440,7 +439,7 @@ def update_distance_filter(value):
                State('checklist-environment', 'value'),
                State('checklist-safety', 'value'),
                State('temperatures-range-slider', 'value')])
-def display_virtual_solvent(update,reset,path, sort_by, figure,method, dD, dP, dH, greenness,ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange):
+def display_virtual_solvent(update,reset,path, figure,method, dD, dP, dH, greenness,ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange):
     # Determine which button has been clicked
     ctx = dash.callback_context
 
@@ -452,8 +451,8 @@ def display_virtual_solvent(update,reset,path, sort_by, figure,method, dD, dP, d
         
     # If the Reset button is click, reinitialize all the values
     if button_id == 'button-reset':
-        sort_by, dD, dP, dH, greenness, ndistance,method, hazard_list, waste, health, environment, safety, Trange = \
-        [], None, None, None, 0, N_SOLVENTS, 0, [], WASTE, HEALTH, ENVIRONMENT, SAFETY, TEMPERATURE_RANGE
+        dD, dP, dH, greenness, ndistance,method, hazard_list, waste, health, environment, safety, Trange = \
+        None, None, None, 0, N_SOLVENTS, 0, [], WASTE, HEALTH, ENVIRONMENT, SAFETY, TEMPERATURE_RANGE
     
     # Choose the HSP based on the selected method by the user
     if method == 0:
@@ -559,20 +558,10 @@ def display_virtual_solvent(update,reset,path, sort_by, figure,method, dD, dP, d
             # Update the error message and show the user what she should do
             error_path = 'First, You MUST define the solute coordinates.'
             
-    # If the sorting button have been clicked, it sorts according to the action (ascending or descending)
-    # if not, sorts by the ascending distance in the Hansen space, by default
-    if len(sort_by):
-        dfs = dff.sort_values(
-            sort_by[0]['column_id'],
-            ascending= sort_by[0]['direction'] == 'asc',
-            inplace = False
-        )
-    else:
-        # Default sorting applied
-#        print('Default sorting applied') 
-        dfs = dff.sort_values('Ra', ascending= True, inplace = False)
+    # Sorts by the ascending distance in the Hansen space, by default
+
+    dfs = dff.sort_values('Ra', ascending= True, inplace = False)[:ndistance]
     
-    dfs = dfs[:ndistance]
     
     return figure, dfs.to_dict('records'), greenness, ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange, method, dDinput, dPinput, dHinput, error_path
 

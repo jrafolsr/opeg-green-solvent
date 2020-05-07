@@ -392,12 +392,10 @@ def update_selected_solvent(clicked_data, data):
     return selected_rows
 
 # updates text from the greeness filter
-@app.callback([Output('greenness-indicator', 'children'),
-              Output('table', 'sort_by')],
+@app.callback(Output('greenness-indicator', 'children'),
              [Input('greenness-filter','value')])
 def update_GSK_filter(value):
-    sort_by = [{'column_id': 'Ra', 'direction': 'asc'}]
-    return f'Composite score > {value:d}', sort_by
+    return f'Composite score > {value:d}'
 
 # Updates text from the number-of-solvents filter
 @app.callback(Output('distance-filter-text', 'children'),

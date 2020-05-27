@@ -1,14 +1,115 @@
-.app-header {
-    height: 60px;
-    line-height: 60px;
-    border-bottom: thin lightgrey solid;
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
 }
 
-.app-header .app-header--title {
-    font-size: 22px;
-    padding-left: 5px;
+
+.sources-container{
+		position: fixed;
+        width: 40%;
+        vertical-align: bottom;
+        background: #333;
+        color: #fff;
+		bottom: 0;
+		border-radius: 4px;
+		margin: 10px auto;
+		margin-left:auto;
+		margin-right:auto;
+		font-size : 1vmin;
+    }
+
+.footer-col{
+	padding: 10px 3%;
+	display: inline-block;
+	width : auto;
+	vertical-align: top;
+	margin: 0 auto;
+}	
+	
+	
+.column {
+  padding : 0px 7.5px;
+  margin :0px 0px;
+  float: left;
 }
 
+.left {
+  width: 27%;
+  height : 100%;
+}
+
+.middle {
+  width: 45%;
+  height : 100%;
+}
+
+.right {
+  width: 27%;
+  height : 100%;
+}
+
+
+.buttons-container {
+  width: 100%;
+  align-content: center;
+  text-align: center;
+  display: inline-block;
+  vertical-align: middle;
+  margin: 10px auto;
+}
+
+.button, button{
+	padding : 0 15px;
+	width: min-content;
+	background-color: #C0C0C0;
+	display : inline-block;
+	margin : 1% 1%;
+}
+
+.container {
+	padding: 10px;
+	margin: 5px 0;
+	vertical-align: top;
+	text-align: left;
+}
+
+/*.big-container {
+	border-radius: 4px;
+	border: 1px solid #bbb;
+	background-color:  #DCDCDC;
+*/
+
+.container .filters-type {
+/*	border-radius: 4px;
+	border: 1px solid #bbb;*/
+	text-align: center;
+	padding: 10px;
+	margin: 5px 0;
+	background-color:  #DCDCDC;
+}
+
+#filters-table-div {
+	width : 100%;
+	overflow-y: scroll;
+	max-height: 65vh;
+	margin : 0 0;
+}
+#filters-details {
+	padding-right: 0;
+}
+#column-right-div{
+	overflow-y: scroll;
+	max-height: 90vh;
+}
+#div-fig {
+	width : 45vw;
+	height : 70vh;
+	display:table-cell;
+    vertical-align:middle;
+	padding: 10px;
+}
 /*-------- Hovering stuff ------- */
 
 .hover-span {
@@ -57,102 +158,3 @@
   opacity: 1;
 }
 /* ----------------------- */
-/* Clear floats after the columns */
-.row:after {
-  content: "";
-  display: table;
-  clear: both;
-}
-
-
-.fixed-footer{
-        width: 72%;
-        position: fixed;
-        background: #333;
-        color: #fff;
-		bottom: 0;
-		border-radius: 4px;
-		margin: 10px 0;
-    }
-
-.footer-col{
-	padding: 10px 10px;
-	display: inline-block;
-	font-size : xx-small;
-	width : max-content;
-	vertical-align: top;
-	padding-right : 20px;
-}	
-	
-	
-.column {
-  margin-left : 10px;
-  margin-right : 10px;
-  float: left;
-}
-
-.left {
-  width: 30%;
-}
-
-.middle {
-  width: 42%;
-}
-
-.right {
-  width: 22.5%;
-}
-
-
-.buttons-container {
-  width: 100%;
-  align-content: center;
-  text-align: center;
-  display: inline-block;
-  vertical-align: middle;
-  margin-bottom: 10px;
-  margin-top: 25px;
-}
-
-.button, button{
-	width: 120px;
-	max-width: 200px;
-	background-color: #C0C0C0;
-    margin-left : 20px;
-	margin-right : 20px;
-	display : inline-block
-}
-
-.main-inputs-container {
-	width : 100%;
-	vertical-align: top;
-	text-align: left;
-	border-radius: 4px;
-    border: 1px solid #bbb;
-    box-sizing: border-box;
-	padding-left: 10px;
-	margin-bottom: 10px;
-	padding: 5px;
-	background-color:  #DCDCDC;
-	font-size: small;
-}
-
-.big-container {
-    width : 100%;
-	vertical-align: top;
-	text-align: left;
-	border-radius: 4px;
-    border: 1px solid #bbb;
-    box-sizing: border-box;
-	margin-bottom: 10px;
-	margin-top: 10px;
-	padding: 10px;
-	background-color:  #DCDCDC;
-	font-size: small;
-}
-
-.big-container .filters-type {
-	width : 100%;
-	vertical-align: top;
-	text-align: left;
-}

@@ -3,6 +3,7 @@
 import dash
 import dash_core_components as dcc
 import dash_table
+from dash_table.Format import Format
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
@@ -37,9 +38,18 @@ ENVIRONMENT = ['Aquatic Impact', 'Air Impact']                      # Idem
 SAFETY = ['Flammability and Explosion', 'Reactivity and Stability'] #Idem
 # Temperature range limits (min and max) that will be used in the Range Slidere later on. And offset of 5°C is added
 TEMPERATURE_RANGE = [df['Boiling Point (°C)'].min(axis = 0)-5, df['Boiling Point (°C)'].max(axis = 0)+5]
-# Columns on the displayed table
-TABLE_COLUMNS = {'Solvent': 'Solvent Name', 'Ra' : 'Ra', 'Composite score': 'Composite score',\
-                 'mp (°C)': 'Melting Point (°C)', 'bp (°C)' : 'Boiling Point (°C)'}
+# Columns on the displayed table (WEIRD WAY, BUT RE-ADAPTED FROM BEFORE)
+TABLE_COLUMNS = {'Solvent': 'Solvent Name', 'Ra' : 'Ra', 'G': 'Composite score',\
+                 'bp (°C)' : 'Boiling Point (°C)'}
+TYPE_COLUMNS = ['text', 'numeric', 'numeric', 'numeric']
+FORMAT_COLUMNS = [Format(), Format(precision = 2), Format(precision = 2), Format(precision = 3)]
+# Prepare the list to feed the table
+TABLE_DCC = [{"type" : coltype, "name": key, "id": value, 'format' : colformat} for key, value, coltype, colformat in zip(TABLE_COLUMNS.keys(), TABLE_COLUMNS.values(), TYPE_COLUMNS, FORMAT_COLUMNS)]
+
+
+
+
+
 N_SOLVENTS = df.shape[0]
 ##----------------- Adding new columns -----------------------------------
 df['Ra'] = update_Ra(df[HANSEN_COORDINATES])
@@ -88,11 +98,16 @@ app.config['suppress_callback_exceptions'] = True
 
 # Some text saved in variables
 INTRO_TEXT = [html.Summary(html.B('How does it work?')),\
-              html.P(['This app is designed to help you identify functional and environmentally green solvents. The likelihood to be functional is based on ',
-              html.Span('Hansen solubility parameters (HSP)', title = 'Dispersion (dD), Polarity (dP) and Hydrogen bonding (dH)', className = 'hover-span'),', where a shorter distance in Hansen space ',  html.Span('(Ra)', title = r'Ra = [4(dD2 - dD1)^2 + (dP2 - dP1)^2 + (dH2 - dH1)^2]^(1/2)', className = 'hover-span'), ' correspond to a more similar solvent. The greenness score is based on the GlaxoSmithKline (GSK) solvent sustainability guide, where a higher composite score is a greener alternative.']),\
-              html.P(['(1) Use the right panel to either enter the ', html.B('HSP coordinates'),' of your solute directly, or estimate it from known functional ', html.B('solvent(s)'),' using the dropdown menu. Then click ', html.B('UPDATE.')]),\
-              html.P(['(2) The position of your solute is shown in the ',html.B('HANSEN SPACE.'), ' Use the graph to explore neighboring solvents. Find more information about certain solvent by clicking on it, or selecting it from the table. The ', html.B('color and size'), ' guides you in a sustainable direction.']),
-              html.P(['(3) The ', html.B('SELECTION TABLE'),' ranks the solvents based on the distance Ra to your solute, and specifies the composite score and other useful information solvents.'])]
+              html.P(['This app helps you to identify functional and environmentally green solvents. The likelihood to be functional is based on ',
+              html.Span('Hansen solubility parameters (HSP)', title = 'Dispersion (dD), Polarity (dP) and Hydrogen bonding (dH)', className = 'hover-span'),', where a shorter distance in Hansen space ',  html.Span(['(R', html.Sub('a'),')'], title = r'Ra = [4(dD2 - dD1)^2 + (dP2 - dP1)^2 + (dH2 - dH1)^2]^(1/2)', className = 'hover-span'), ' correspond to a more similar solvent. The '  ,\
+              html.Span(' greenness or composite score (G)', title = 'G = (Waste x Environemt x Health x Safety)^(1/4)', className = 'hover-span'),\
+              ' is based on the GlaxoSmithKline (GSK) solvent sustainability guide, where a higher G means a greener alternative.']),\
+              html.P(['(1) Use the radiobuttons on the left panel to either estimate the ',\
+                      html.B('HSP coordinates'), ' of your solute from known functional solvent(s) or to manually enter the values. Then click ', html.B('UPDATE.')]),\
+              html.P(['(2) The solute is highlighted in the ', html.B('Hansen space.'), ' Use the mouse to explore neighboring solvents. Click on the solvent or select it from the table to find more information.']),
+              html.P(['(3) The ', html.B('Selection table'),' ranks the solvents based on the distance R', html.Sub('a'), ' to your solute, and specifies G.']),
+              html.P(['(4) Click ', html.B('QUICK PATH'), ' to view see a quick testing route towards a green and functional solvent.']),
+              html.P(['(5) Use the ', html.B('Advanced options'), ' to refine your search. Click  ', html.B('UPDATE'), ' to apply your changes.'])]
 
 REFERENCES_TEXT0 = ['Hansen solubility ', html.A('theory and parameters', href = 'https://www.stevenabbott.co.uk/practical-solubility/hsp-basics.php', target='_blank'), ' (Last accessed: 2018-10-22)', \
                      html.Br(),\
@@ -105,83 +120,30 @@ REFERENCES_TEXT1 = ['Find the publication on ', html.A('The Amazing Journal', hr
 
 
 app.layout = html.Div([html.Div(className = 'row',  children = [
-        #----------- First column, where the info goes ------------------------
+        html.H4('A Tool for the Selection of a Functional Green Solvent', style = {'text-align' : 'center'}),
+        #---------- First column where the input options go-----------
         html.Div(className = 'column left', children = [
-            html.H4('Selection of Functional Green Solvent'),
-            html.Div(id = 'intro_div', className = 'big-container', children = 
-                    html.Details(INTRO_TEXT, title = 'Click the triangle to open or close the panel',id = 'div-instructions', open = 'open')
-                    ),
-            html.Div(id = 'report', className = 'big-container', children = create_report(),
-             style = {'overflow-y': 'auto', 'height' : 'auto', 'max-height' : '350px'}),
-        ]),
-        #----------- Second column, where the plot and table go----------------
-        html.Div(className = 'column middle', children = [                     
-          html.Div([
-                dcc.Graph(id='main-plot', 
-                      figure= { "data": traces,
-                                "layout": plot_layout,
-                                },
-                      config={"editable": False},
-                      style = {'width' : '100%'}
-                      )
-            ]),
-            html.Div(id = 'table-div', children = [
-                html.H5('Selection table', style = {'text-align' : 'center'}),
-                dash_table.DataTable(
-                    id='table',
-                    columns=[{"name": key, "id": value} for key, value in TABLE_COLUMNS.items()],
-                    data = df[list(TABLE_COLUMNS.values())].to_dict('records'),
-        #            fixed_rows = { 'headers': True, 'data': 0},
-                    style_as_list_view = True,
-                    row_selectable = 'single',
-                    selected_rows = [],
-                    sort_by = [],
-                    sort_mode = 'single',
-                    sort_action='native',
-                    style_cell_conditional=[
-                    {'if': {'column_id': 'Solvent Name'},
-                        'textAlign': 'left','width': '20px','maxWidth': '100px'
-                    }],
-                    style_table= dict(overflowY = 'scroll',
-                                 overflowX = 'auto',
-                                 height = '300px',
-                                 maxHeight = '400px',
-                                 minWidth = '300px',
-                                 width = '100%',
-                                 maxWidth = '800px',
-                                 border = 'thin lightgrey solid'),
-                    style_cell = {'minWidth': '0px', 'width': '20px','maxWidth': '75px', 'text-align':'center','textOverflow': 'ellipsis'},
-                    )
-                ], style = {'margin-top' : '20px', 'align-content': 'center', 'text-align' : 'center'}
-            ),  
-        ]),
-        #---------- Third column, where the plot and filter options go-----------
-        html.Div(className = 'column right', children = [
-                        html.Div(id = 'HSP-values', children = [None, None, None], hidden = False),
-                        html.Div(id = 'buttons-div', className  = 'buttons-container', children = [
-                            html.Button('UPDATE',
-                                        id='button-update',
-                                        title = 'Click here to update the plot and table',
-                                        n_clicks = 0,
-                                        n_clicks_timestamp = -1),
-                            html.Button('RESET',
-                                        id='button-reset',
-                                        title = 'Click here to Reset the app',
-                                        n_clicks = 0,
-                                        n_clicks_timestamp = -2),                                        
-                           ]),
-                        html.Div(id = 'radiobutton-div', className ='main-inputs-container', children = [
+                        html.Div(id = 'radiobutton-div', className ='container', children = [
                             dcc.RadioItems(
                                     id = 'radiobutton-route',
                                     options=[
-                                        {'label': 'Type the HSP of your solute', 'value': 0},
-                                        {'label': 'Select the known functional solvent(s) of your solute', 'value': 1}
+                                        {'label': 'Known functional solvent(s) of your solute', 'value': 1},
+                                        {'label': 'Type the HSP of your solute', 'value': 0}
                                     ],
-                                    value = 0,
+                                    value = 1,
                                     style = {'margin-bottom' : '10px'}),                              
-                            html.Div(id = 'hansen-div', children = [
-                                    html.Div(style = {'width': 'max-content','text-align' : 'right', 'margin-left': 'auto',
-      'margin-right': 'auto'}, children = [
+                            html.Div(id = 'solvent-list-div', hidden = False, children = [
+                                dcc.Dropdown(
+                                    id='solvent-list',
+                                    options=[{'label': name, 'value': i} for name,i in zip(df['Solvent Name'],df.index)],
+                                    value = [],
+                                    placeholder = "Choose a solvent...",
+                                    multi = True,
+                                )] 
+                           ),
+                            html.Div(id = 'hansen-div', hidden = True, children = [
+                                    html.Div(style = {'width': 'max-content','text-align' : 'right', 'margin': '0 auto'},\
+                                             children = [
                                     html.P(['Dispersion:  ',
                                         dcc.Input(
                                             id = "dD-input",
@@ -207,38 +169,35 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                                         ), ' (MPa)', html.Sup('1/2')
                                     ])
                                 ])
-                            ]),
-                            html.Div(id = 'solvent-list-div', hidden = True, children = [
-                                dcc.Dropdown(
-                                    id='solvent-list',
-                                    options=[{'label': name, 'value': i} for name,i in zip(df['Solvent Name'],df.index)],
-                                    value = [],
-                                    placeholder = "Choose a solvent...",
-                                    multi = True,
-                                )] 
-                           ),
+                            ]),                            
                         ]),
-                        html.Div(['The solvents in the ', html.B('SELECTION TABLE'), ' are ranked with increasing distance (Ra) to the defined solute (black circle). For a functional and sustainable solvent, ',html.Em(['"the closer and ', html.B('the greener'), ' the better".']),\
-                                  html.P('You can also refine the solvent selection by applying the following filters:')],
-                                         style = {'font-size' : 'small', 'margin-bottom' : '10px'}),
-                        html.Div(id = 'filters-div', children = [
-                            html.Details(className = 'main-inputs-container',  title = 'Suggested route', children = [
-                                html.Summary(html.B(['Suggested path for testing solvents'])),  
-                                html.Div(id = 'path-div',className = 'filters-type', children = [
-                                    html.P(f'Proposed path to find the greenest functional solvent :'),
-                                    html.Button('SHOW PATH',
+                        html.Div(id = 'buttons-div', className  = 'buttons-container', children = [
+                            html.Button('UPDATE',
+                                        id='button-update',
+                                        title = 'Click here to update the plot and table',
+                                        n_clicks = 0,
+                                        n_clicks_timestamp = -1),
+                            html.Button('RESET',
+                                        id='button-reset',
+                                        title = 'Click here to Reset the app',
+                                        n_clicks = 0,
+                                        n_clicks_timestamp = -2),
+                            html.Button('QUICK PATH',
                                                 id='button-path',
-                                                title = 'Click here to view the suggested route',
+                                                title = 'Click to view a quick path to a green solvent',
                                                 n_clicks = 0,
-                                                n_clicks_timestamp = -1,
-                                                style = {'width' : '200px'}),
-                                    html.P('', id = 'error-path')
-                                ],  style = {'width' : '100%', 'text-align' : 'center'}),
-                            ]),
-                            html.Details(className = 'main-inputs-container',  title = 'Show only the N closest candidates', children = [
-                                html.Summary(html.B(['Show less solvents'])),  
-                                html.Div(id = 'distance-div',className = 'filters-type', children = [
-                                    html.P(f'Shows only the {N_SOLVENTS:d}-first closest solvents:', id = 'distance-filter-text'),
+                                                n_clicks_timestamp = -1),
+                            html.P('', id = 'error-path')                                        
+                           ]),          
+
+                        html.Div(id = 'filters-table-div', children = [
+                            html.Details(id = 'filters-details', className = 'container',\
+                                title = 'Advanced options for solvent filtering', children = [
+                                html.Summary(html.B('Advanced options')),
+                                html.Div( children = [
+                                html.Div(id = 'distance-div',className = 'filters-type', children = [                                    
+                                html.P(f'Show the {N_SOLVENTS:d}-first closest solvents:', id = 'distance-filter-text'),  
+
                                     dcc.Slider(
                                         id = 'distance-filter',
                                         min = 5,
@@ -247,55 +206,46 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                                         step = None,
                                         marks = {5: '5', 10 : '10', 25: '25', 50: '50', 100 : '100', N_SOLVENTS : 'all'}
                                         )
-                                ],  style = {'width' : '100%', 'text-align' : 'center'}),
-                            ]),
-                            html.Details(className = 'main-inputs-container', title = 'Filter out the "less" green solvents', children = [
-                                html.Summary(html.B(['Filter by ',\
-                                                     html.Span('composite score', title = 'G = (Waste x Environemt x Health x Safety)^(1/4)', className = 'hover-span'),\
-                                                     ' value'])),  
+                                ]),
                                 html.Div(id = 'greenness-div',className = 'filters-type', children = [
-                                    html.P('Shows only the solvents above the selected score:'),
-                                    html.Div(id = 'greenness-indicator', children = 'Greenness > 0'),
+                                html.P(['Show solvents with G',\
+                                        html.Span(id = 'greenness-indicator', children = ' > 0')]),  
+
                                     dcc.Slider(
                                         id = 'greenness-filter',
                                         min = 0,
                                         max = 8,
                                         value = 0,
                                         step = 1,
+                                        marks = dict((i, str(i)) for i in range(0,9,2))
                                         )
-                                ],  style = {'width' : '100%', 'text-align' : 'center'}),
-                            ]),                                     
-                            html.Details(className = 'main-inputs-container', children = [
-                               html.Summary(html.B('Exclude solvents by hazard labels')),
+                                ]),
                                html.Div(id = 'div-hazard-list',className = 'filters-type', children = [
-                                    html.P('Remove solvents with the following hazard labels:'),
+                               html.P('Exclude solvents by hazard label'),
                                     dcc.Dropdown(
                                         id = 'hazard-list',
                                         options=[{'label': label + f': {text}', 'value': label} for text, label in zip(df2['Fulltext'][2:48],df2.index[2:48])],
                                         value = [],
-                                        placeholder = "Remove hazards...",
-                                        multi = True,
-                                        )
+                                        placeholder = "Hazards to exclude...",
+                                        multi = True
+                                        ),
                                 ]),
-                            ]),
-                            html.Details(className = 'main-inputs-container', children = [
-                                html.Summary(html.B('Filter by boiling point range')),
+                               html.Div(id = 'div-temperature-range',className = 'filters-type', children = [
+                                    html.P(['Show solvents with the boiling point within ', html.Span(id='output-temperature-slider')]),
                                     dcc.RangeSlider(
                                         id='temperatures-range-slider',
                                         min=TEMPERATURE_RANGE[0],
                                         max=TEMPERATURE_RANGE[1],
                                         step = 5,
-                                        value=TEMPERATURE_RANGE,
+                                        value = TEMPERATURE_RANGE,
                                         marks={
                                             0: {'label': '0°C', 'style': {'color': '#77b0b1'}},
                                             100: {'label': '100°C', 'style': {'color': '#f50'}}}
-                                    ),
-                                html.P(id='output-temperature-slider')
-                            ]),                                    
-                            html.Details(className = 'main-inputs-container', title = 'It will use only the selected categories to calculate the composite score', children = [
-                               html.Summary(html.B('Define your own composite score')),                    
-                                html.Div(id = 'checklist-div',className = 'filters-type',  children = [
-                                    html.P('Uncheck the catergories to be excluded from the final composite score'),
+                                    )]
+                               ),
+                                html.Div(id = 'checklist-div', className = 'filters-type',  children = [                                
+                               html.P(html.Span('Define your own composite score (G)', className = 'hover-span', title = 'Uncheck the categories to be excluded from the G calculation')),
+                               html.Div(style = {'text-align' : 'left'} , children = [
                                     html.P(html.Em('Waste')),
                                     dcc.Checklist(id = 'checklist-waste',
                                                   options = [{'label': name, 'value': name} for name in WASTE],
@@ -320,33 +270,83 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                                                   value = SAFETY,
                                                   labelStyle={'display': 'inline-block', 'width' : '50%'}
                                                   )
+                                        ])
                                     ]),
-                                ]),
-                        ]),
-                    ])
-        ], style = {'width' : '100%', 'height' : 'max-content', 'margin-bottom' : '10px'}),
-        html.Div([html.Div(html.H6('Sources'), className = 'footer-col', style = {'width' : '100px'}),\
-                     html.Div(REFERENCES_TEXT0, className = 'footer-col', style = {'margin-right' : '100px'}),\
-                     html.Div(REFERENCES_TEXT1, className = 'footer-col')],\
-                        className = 'fixed-footer')
+                                ])
+                            ]),
+                        
+            html.Div(id = 'table-div', children = [
+                html.H5('Selection table', id = 'title-table', style = {'text-align' : 'center'}),
+                dash_table.DataTable(
+                    id='table',
+                    columns = TABLE_DCC, # defined at the beginning
+                    data = df[list(TABLE_COLUMNS.values())].to_dict('records'),
+        #            fixed_rows = { 'headers': True, 'data': 0},
+                    style_as_list_view = True,
+                    row_selectable = 'single',
+                    selected_rows = [],
+                    sort_by = [],
+                    sort_mode = 'single',
+                    sort_action='native',
+                    style_cell_conditional=[
+                    {'if': {'column_id': 'Solvent Name'},
+                        'textAlign': 'left','width': '20px','maxWidth': '100px'
+                    }],
+                    style_table= dict(#overflowY = 'scroll',
+                                 # overflowX = 'auto',
+                                 # height = '30vh',
+                                 width = '99%',
+                                 border = 'thin lightgrey solid'),
+                    style_cell = {'minWidth': '0px', 'width': '20px','maxWidth': '75px', 'text-align':'center','textOverflow': 'ellipsis'},
+                    )
+                ])
+            ])                          
+                    ]),
+        #----------- Second column, where the plot goes ----------------
+        html.Div(className = 'column middle', children = [         
+          html.Div(id = 'div-fig', children = [
+                dcc.Graph(id='main-plot', 
+                      figure= { "data": traces,
+                                "layout": plot_layout,
+                                },
+                      config={"editable": False},
+                      style = {'padding-bottom' : '10vh', 'max-width' : '42vw'}
+                      )
+                ]),
+            html.Div([html.Div('Sources', className = 'footer-col',\
+                               style = {'font-size' : '2vmin','width' : 'min-content','max-width' : '20%'}),\
+               html.Div(REFERENCES_TEXT0, className = 'footer-col', style = {'max-width' : '40%'}),\
+               html.Div(REFERENCES_TEXT1, className = 'footer-col', style = {'max-width' : '31%'})],\
+                  className = 'sources-container')
+        ]),
+        #----------- Third column, where the info goes (how it works + solvent info) ------------------------
+        html.Div(id = 'column-right-div',className = 'column right', children = [
+            html.Div(id = 'intro_div', className = 'container', children = 
+                    html.Details(INTRO_TEXT,\
+                                 id = 'div-instructions')
+                    ),
+            html.Div(id = 'report', className = 'container', children = create_report()),
+        ]),
+
+    ], style = {'width' : '95%', 'height' : '100%',  'margin-left':'auto', 'margin-right':'auto'})
 ])
 
 # Updates the height o fthe info container based on the Details tabe is open or not
-@app.callback(Output('report', 'style'),
-              [Input('div-instructions', 'n_clicks')])
-def update_report_div_max_length(n):
-#    print(n)
-    if n is None or n % 2 == 0:
-        return  {'overflow-y': 'auto', 'height' : 'auto', 'max-height' : '350px'}
-    else:
-       return  {'overflow-y': 'auto', 'height' : 'auto', 'max-height' : '700px'}
+# @app.callback(Output('report', 'style'),
+#               [Input('div-instructions', 'n_clicks')])
+# def update_report_div_max_length(n):
+# #    print(n)
+#     if n is None or n % 2 == 1:
+#         return  {'overflow-y': 'auto', 'height' : 'auto', 'max-height' : '30vh'}
+#     else:
+#         return  {'overflow-y': 'auto', 'height' : 'auto', 'max-height' : '80vh'}
 
 # Updates the  information on the temperature filter
 @app.callback(
     dash.dependencies.Output('output-temperature-slider', 'children'),
     [dash.dependencies.Input('temperatures-range-slider', 'value')])
 def update_temperature_output(value):
-    return 'You have solvents between bp of {}°C and {} °C'.format(*value)
+    return '{}°C and {} °C'.format(*value)
 
 # Selector of the method to choose your solute parameters, hides/shows the Input
 @app.callback([Output('hansen-div', 'hidden'),
@@ -395,7 +395,7 @@ def update_selected_solvent(clicked_data, data):
 @app.callback(Output('greenness-indicator', 'children'),
              [Input('greenness-filter','value')])
 def update_GSK_filter(value):
-    return f'Composite score > {value:d}'
+    return f' > {value:d}'
 
 # Updates text from the number-of-solvents filter
 @app.callback(Output('distance-filter-text', 'children'),
@@ -449,13 +449,13 @@ def display_virtual_solvent(update,reset,path, figure,method, dD, dP, dH, greenn
         
     # If the Reset button is click, reinitialize all the values
     if button_id == 'button-reset':
-        dD, dP, dH, greenness, ndistance,method, hazard_list, waste, health, environment, safety, Trange = \
-        None, None, None, 0, N_SOLVENTS, 0, [], WASTE, HEALTH, ENVIRONMENT, SAFETY, TEMPERATURE_RANGE
+        dD, dP, dH, greenness, ndistance,method,solvent_list, hazard_list, waste, health, environment, safety, Trange = \
+        None, None, None, 0, N_SOLVENTS, 1, [], [], WASTE, HEALTH, ENVIRONMENT, SAFETY, TEMPERATURE_RANGE
     
     # Choose the HSP based on the selected method by the user
     if method == 0:
         dDinput, dPinput, dHinput =  dD, dP, dH
-        
+       
         solvent_list = []
     else:
         dDinput, dPinput, dHinput =  None, None, None
@@ -526,7 +526,7 @@ def display_virtual_solvent(update,reset,path, figure,method, dD, dP, dH, greenn
 
     
     error_path = '' # Error message in the case that we haven't defined the Ra yet
-    
+
     # If show path has not been cliecked, just plot the data with the applied filters
     if button_id == 'button-update' or button_id == 'button-reset':
         # Updating hte first trace (main one) by with the data filtered and only the n-first values
@@ -536,9 +536,9 @@ def display_virtual_solvent(update,reset,path, figure,method, dD, dP, dH, greenn
         dff = df[list(TABLE_COLUMNS.values())][data_filter]
         # No annotations
         figure['layout']['scene']['annotations'] = []
-        
+        table_title = 'Selection table (sorted)'
     else:
-        # SHOW PATH has been clicked. Now, has the the distance been defined?
+        # QUICK PATH has been clicked. Now, has the the distance been defined?
         RA_EXIST =  not df['Ra'].isnull().all() # Check if all the values are null (meanning Ra is not defined)
         if RA_EXIST:
             # Add here the PATH algorithm
@@ -549,13 +549,14 @@ def display_virtual_solvent(update,reset,path, figure,method, dD, dP, dH, greenn
             # Updates based on the data excluded
             dff = dfpath[list(TABLE_COLUMNS.values())]
             figure['layout']['scene']['annotations'] = create_annotations(dfpath)
-            
         else:
             # It has not been defined, so just plot the data based on the filters
             dff = df[data_filter][:ndistance]
             # Update the error message and show the user what she should do
-            error_path = 'First, You MUST define the solute coordinates.'
-            
+            if path > -1: # Chekc if it is the first call, so it doens't show the error initially
+                error_path = 'First, you MUST define the solute coordinates.'
+                
+                
     # Sorts by the ascending distance in the Hansen space, by default
 
     dfs = dff.sort_values('Ra', ascending= True, inplace = False)[:ndistance]

@@ -33,13 +33,13 @@ def solvents_trace(df, show_path = False):
         # If Ra has not been defined, the  hover template looks like this
         hovertemplate = '<b>%{text}</b><br>' +\
                                          '%{hovertext}<br>' +\
-                                         'dD = %{x:.2f}<br>dP = %{y:.2f}<br>dH = %{z:.2f} <extra>Ra = n/a <br>mp  = %{customdata[0]:.0f} °C<br>bp  = %{customdata[1]:.0f} °C</extra>'
+                                         'dD = %{x:.1f}<br>dP = %{y:.1f}<br>dH = %{z:.1f} <extra>Ra = n/a <br>mp  = %{customdata[0]:.0f} °C<br>bp  = %{customdata[1]:.0f} °C</extra>'
 #        size = 6
     else:
         # If it has been defined, looks like this
         hovertemplate = '<b>%{text}</b><br>' +\
                                          '%{hovertext}<br>' +\
-                                         'dD = %{x:.2f}<br>dP = %{y:.2f}<br>dH = %{z:.2f} <extra>Ra = %{customdata[2]:.1f}<br>mp  = %{customdata[0]:.0f} °C<br>bp  = %{customdata[1]:.0f} °C</extra>'
+                                         'dD = %{x:.1f}<br>dP = %{y:.1f}<br>dH = %{z:.1f} <extra>Ra = %{customdata[2]:.1f}<br>mp  = %{customdata[0]:.0f} °C<br>bp  = %{customdata[1]:.0f} °C</extra>'
                                          
     # Some function that scales the size with the greeness score                                     
     size = 2*np.sqrt(3) * 3**(df['Composite score']/6).values
@@ -89,13 +89,13 @@ def create_report(data = None):
     if data is None:
         text = [html.H3('Solvent Information'),
                 html.P('CAS', title = 'The CAS universally identifies the solvent'),
-                html.P('Hansen coordinates: dD, dP , dH', title = 'The HSP of the solvent'),
+                html.P('Hansen coordinates: dD, dP, dH', title = 'The HSP of the solvent'),
                 html.P('Melting Point: \t \t Boiling point:', title = 'Information about the melting a boiling points of the solvent'),
                 html.P(html.B('GSK green solvent selection scores')),
                 html.P("GSK score: x, User's adapted score: x", title = 'The higher the "greener" the solvent is'),
-                html.P('Some info about the scores that are given for each solvent'),
+                html.P('Detailed information of the scores of the solvent'),
                 html.B('Globally harmonized System of Classification and Labelling of Chemical'),
-                html.P('Some info about the classification and labelling of the solvents'),
+                html.P('Detailed information about the classification and labelling of the solvent'),
                 ]
         return text
     else:

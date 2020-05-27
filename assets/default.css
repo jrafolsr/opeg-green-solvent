@@ -57,7 +57,7 @@
   /* For devices larger than 550px */
   @media (min-width: 1024px) {
     .container {
-      width: 80%; }
+      width: 100%; }
     .column,
     .columns {
       margin-left: 4%; }
@@ -127,13 +127,21 @@
   html {
     font-size: 62.5%; }
   body {
-    font-size: 1.5em; /* currently ems cause chrome bug misinterpreting rems on body element */
+    font-size: 1.5em;/*2vh; /* currently ems cause chrome bug misinterpreting rems on body element */
     line-height: 1.6;
     font-weight: 400;
     font-family: "Open Sans", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    color: rgb(50, 50, 50); }
+    color: rgb(50, 50, 50);
+	background-color: #F0F0F0;	
+	height: 90vh;
+	min-height: 90vh;	}
+	
   
-  
+  @media (max-width: 1300px) {
+	  body{
+		font-size: 2vmin;
+	  }
+  }  
   /* Typography
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
   h1, h2, h3, h4, h5, h6 {
@@ -184,7 +192,7 @@
     padding: 0 30px;
     color: #555;
     text-align: center;
-    font-size: 11px;
+    font-size: small;
     font-weight: 600;
     line-height: 38px;
     letter-spacing: .1rem;
@@ -230,7 +238,11 @@
     color: #FFF;
     background-color: #1EAEDB;
     border-color: #1EAEDB; }
-  
+  @media (max-width: 1300px) {
+	  button{
+		font-size: 2vmin;
+	  }
+  }
   
   /* Forms
   –––––––––––––––––––––––––––––––––––––––––––––––––– */

@@ -4,6 +4,6 @@ ChemDraw/
 ~$solventSelectionTool_table.xlsx
 static/~*.xlsx
 temp.py
-layout_option0
-code_snippets
-screen
+layout_option0.py
+code_snippets.ipynb
+screen.png

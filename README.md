@@ -4,7 +4,7 @@ This is the source code generate the web-app  **A Tool for the Selection of a Fu
 
 This app ahas been created using the Python framework [Dash](https://dash.plotly.com/).
 
-## How does it work?
+### How does it work?
 
 This app helps you to identify functional and environmentally green solvents. The likelihood to be functional is based on Hansen solubility parameters (HSP), where a shorter distance in Hansen space (_Ra_) correspond to a more similar solvent. The greenness or composite score (_G_) is based on the GlaxoSmithKline (GSK) solvent sustainability guide, where a higher G means a greener alternative.
 

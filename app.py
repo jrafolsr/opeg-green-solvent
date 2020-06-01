@@ -15,11 +15,11 @@ from support_functions import update_Ra, create_report, solvents_trace, df2,filt
 STATIC_PATH = 'static'
 
 # Main stylesheet, so far, fetching it from an open source webpage
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+external_stylesheets = []
 # I start the dash object instance, saved in the variable app
-app = dash.Dash(__name__, external_stylesheets = external_stylesheets)
+app = dash.Dash(__name__)
 
-server = app.server # No sure that this line is necessaru, not sure what it does...
+server = app.server # No sure that this line is necessary, not sure what it does...
 
 #------------------- LOADING THE DATA -------------------------------------------
 # Loading the Excel file with all the solvents and its properties (first sheet)
@@ -36,6 +36,7 @@ WASTE = ['Incineration','Recycling','Biotreatment','VOC Emissions'] # Columns' n
 HEALTH = ['Health Hazard', 'Exposure Potential']                    # Columns' names defining the health score
 ENVIRONMENT = ['Aquatic Impact', 'Air Impact']                      # Idem
 SAFETY = ['Flammability and Explosion', 'Reactivity and Stability'] #Idem
+
 # Temperature range limits (min and max) that will be used in the Range Slidere later on. And offset of 5°C is added
 TEMPERATURE_RANGE = [df['Boiling Point (°C)'].min(axis = 0)-5, df['Boiling Point (°C)'].max(axis = 0)+5]
 # Columns on the displayed table (WEIRD WAY, BUT RE-ADAPTED FROM BEFORE)
@@ -43,7 +44,7 @@ TABLE_COLUMNS = {'Solvent': 'Solvent Name', 'Ra' : 'Ra', 'G': 'Composite score',
                  'bp (°C)' : 'Boiling Point (°C)'}
 TYPE_COLUMNS = ['text', 'numeric', 'numeric', 'numeric']
 FORMAT_COLUMNS = [Format(), Format(precision = 2), Format(precision = 2), Format(precision = 3)]
-# Prepare the list to feed the table
+# Prepare the list to feed the table, adding the format two the desired precision
 TABLE_DCC = [{"type" : coltype, "name": key, "id": value, 'format' : colformat} for key, value, coltype, colformat in zip(TABLE_COLUMNS.keys(), TABLE_COLUMNS.values(), TYPE_COLUMNS, FORMAT_COLUMNS)]
 
 
@@ -128,7 +129,7 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                                     id = 'radiobutton-route',
                                     options=[
                                         {'label': 'Known functional solvent(s) of your solute', 'value': 1},
-                                        {'label': 'Type the HSP of your solute', 'value': 0}
+                                        {'label': 'Known HSP of your solute', 'value': 0}
                                     ],
                                     value = 1,
                                     style = {'margin-bottom' : '10px'}),                              

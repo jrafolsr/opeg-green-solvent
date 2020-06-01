@@ -174,7 +174,7 @@ def filter_by_hazard(hazards_to_remove, data_hazards):
 def GSK_calculator(df, scores):
     """ 
     Updates the compounds score based on the selected scores only
-        - df: DataFrame structure that should contain at least all the scores columns (that is at least 10)
+        - df: DataFrame structure that should contain at least all the scores columns (that are at least 10)
         - scores: list of scores category, each element containing a list with the subcategories names
     """
     k = 0
@@ -206,7 +206,7 @@ def suggested_path(df, ref_solvent = None, min_score = 1.0):
         - ref_solvent: if no reference solvent Series is passed, it will filter all the solvents with score < min_score
         - min_score: minimum score to consider if no ref_solvent is passed
     Returns:
-        A DataFrame structure with the sorted solvent that will leads you to the greeness paradise
+        A DataFrame structure with the sorted solvents that will leads you to the greeness paradise
     """
     flag = True
     solvent_path = []

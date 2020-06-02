@@ -15,7 +15,7 @@ from support_functions import update_Ra, create_report, solvents_trace, df2,filt
 STATIC_PATH = 'static'
 
 # Main stylesheet, so far, fetching it from an open source webpage
-external_stylesheets = []
+#external_stylesheets = []
 # I start the dash object instance, saved in the variable app
 app = dash.Dash(__name__)
 
@@ -25,7 +25,8 @@ server = app.server # No sure that this line is necessary, not sure what it does
 # Loading the Excel file with all the solvents and its properties (first sheet)
 # The data is loaded in a DataFrame structure (see pandas library)
 df = pd.read_excel('solventSelectionTool_table.xlsx', sheet_name = 0, header = 2)
-df.set_index('Solvent Name', inplace=True, drop=False) # The column name is set as a index, not sure is the wisest option
+df['index'] = df['Solvent Name']
+df.set_index('index', inplace=True, drop=True) # The column name is set as a index, not sure is the wisest option
 df = df[1:] # Here I am manually dropping the first row, as it is empty
 
 
@@ -116,12 +117,21 @@ REFERENCES_TEXT0 = ['Hansen solubility ', html.A('theory and parameters', href =
                      ' and ', html.A('[2]', href = 'https://pubs.rsc.org/en/content/articlelanding/2011/gc/c0gc00918k', target='_blank'), html.Br(),\
                      'GHS statements from ', html.A('PubChem', href = 'https://pubchem.ncbi.nlm.nih.gov/', target='_blank'), ' (Last accessed: 2019-05-30)',\
                      ' and ', html.A('European Chemicals Agency (ECHA) C&L Inventory', href = 'https://echa.europa.eu/information-on-chemicals/cl-inventory-database/', target='_blank'), ' (Last accessed: 2019-05-30)']
-REFERENCES_TEXT1 = ['Find the publication on ', html.A('The Amazing Journal', href = 'https://www.umu.se/globalassets/personalbilder/petter-lundberg/Profilbild.jpg?w=185', target='_blank'), html.Br(),
-                     'Made by the ', html.A('Organic Photonics and Electronics group (OPEG)', href = 'http://www.opeg-umu.se/', target='_blank')] 
+REFERENCES_TEXT1 = ['Find the publication ', html.A('here', href = 'https://onlinelibrary.wiley.com/journal/15214095', target='_blank'), html.Br(),
+                     'Made by the ', html.A('Organic Photonics and Electronics Group (OPEG)', href = 'http://www.opeg-umu.se/', target='_blank')] 
 
 
-app.layout = html.Div([html.Div(className = 'row',  children = [
-        html.H4('A Tool for the Selection of a Functional Green Solvent', style = {'text-align' : 'center'}),
+app.layout = html.Div([html.Div(className = 'row header-container',  children = [
+       html.Img(src = r'\static\dash-logo.png',\
+                alt = 'plotly-logo',id = 'logo', ),
+       html.H4('A Tool for the Selection of a Functional Green Solvent',
+                         id = 'header-title'),
+       html.A(html.Img(src = r'\static\opeg-logo.png',\
+                alt = 'opeg-logo',\
+                    title = 'Organic Electronics and Photonics Group',
+                    id = 'opeg-logo'), href = 'http://www.opeg-umu.se/', target='_blank')          
+       ]),
+       html.Div(className = 'row main-content',  children = [
         #---------- First column where the input options go-----------
         html.Div(className = 'column left', children = [
                         html.Div(id = 'radiobutton-div', className ='container', children = [
@@ -154,7 +164,7 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                                             style = {'width' : '80px'},
                                         ), ' (MPa)', html.Sup('1/2')]),
                 
-                                    html.P(['Polarization: ',
+                                    html.P(['Polarity: ',
                                         dcc.Input(
                                             id = "dP-input",
                                             type = 'number',
@@ -228,8 +238,8 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                                         options=[{'label': label + f': {text}', 'value': label} for text, label in zip(df2['Fulltext'][2:48],df2.index[2:48])],
                                         value = [],
                                         placeholder = "Hazards to exclude...",
-                                        multi = True
-                                        ),
+                                        multi = True,
+                                        style = {'text-align' : 'left'}),
                                 ]),
                                html.Div(id = 'div-temperature-range',className = 'filters-type', children = [
                                     html.P(['Show solvents with the boiling point within ', html.Span(id='output-temperature-slider')]),
@@ -296,7 +306,7 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                     style_table= dict(#overflowY = 'scroll',
                                  # overflowX = 'auto',
                                  # height = '30vh',
-                                 width = '99%',
+                                 width = '100%',
                                  border = 'thin lightgrey solid'),
                     style_cell = {'minWidth': '0px', 'width': '20px','maxWidth': '75px', 'text-align':'center','textOverflow': 'ellipsis'},
                     )
@@ -314,11 +324,6 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
                       style = {'padding-bottom' : '10vh', 'max-width' : '42vw'}
                       )
                 ]),
-            html.Div([html.Div('Sources', className = 'footer-col',\
-                               style = {'font-size' : '2vmin','width' : 'min-content','max-width' : '20%'}),\
-               html.Div(REFERENCES_TEXT0, className = 'footer-col', style = {'max-width' : '40%'}),\
-               html.Div(REFERENCES_TEXT1, className = 'footer-col', style = {'max-width' : '31%'})],\
-                  className = 'sources-container')
         ]),
         #----------- Third column, where the info goes (how it works + solvent info) ------------------------
         html.Div(id = 'column-right-div',className = 'column right', children = [
@@ -329,7 +334,12 @@ app.layout = html.Div([html.Div(className = 'row',  children = [
             html.Div(id = 'report', className = 'container', children = create_report()),
         ]),
 
-    ], style = {'width' : '95%', 'height' : '100%',  'margin-left':'auto', 'margin-right':'auto'})
+    ]),
+    html.Div([html.Div('Sources', className = 'footer-col',\
+                               style = {'font-size' : '3vmin','width' : 'min-content','max-width' : '20%'}),\
+               html.Div(REFERENCES_TEXT0, className = 'footer-col', style = {'max-width' : '50%'}),\
+               html.Div(REFERENCES_TEXT1, className = 'footer-col', style = {'max-width' : '20%'})],\
+                  className = 'row sources-container')
 ])
 
 # Updates the height o fthe info container based on the Details tabe is open or not
@@ -402,7 +412,7 @@ def update_GSK_filter(value):
 @app.callback(Output('distance-filter-text', 'children'),
              [Input('distance-filter','value')])
 def update_distance_filter(value):
-    return f'Shows only the {value:d}-first closest solvents:'
+    return f'Show only the {value:d}-first closest solvents:'
 
 # Main callaback, which gathers all the info and responds to it
 @app.callback([Output('main-plot', 'figure'),
@@ -420,7 +430,8 @@ def update_distance_filter(value):
                Output('dD-input', 'value'),
                Output('dP-input', 'value'),
                Output('dH-input', 'value'),
-               Output('error-path', 'children')],
+               Output('error-path', 'children'),
+               Output('main-plot', 'clickData')],
               [Input('button-update', 'n_clicks_timestamp'),
                Input('button-reset', 'n_clicks_timestamp'),
                Input('button-path', 'n_clicks_timestamp')],
@@ -438,7 +449,7 @@ def update_distance_filter(value):
                State('checklist-environment', 'value'),
                State('checklist-safety', 'value'),
                State('temperatures-range-slider', 'value')])
-def display_virtual_solvent(update,reset,path, figure,method, dD, dP, dH, greenness,ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange):
+def main_plot(update,reset,path, figure,method, dD, dP, dH, greenness,ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange):
     # Determine which button has been clicked
     ctx = dash.callback_context
 
@@ -537,7 +548,6 @@ def display_virtual_solvent(update,reset,path, figure,method, dD, dP, dH, greenn
         dff = df[list(TABLE_COLUMNS.values())][data_filter]
         # No annotations
         figure['layout']['scene']['annotations'] = []
-        table_title = 'Selection table (sorted)'
     else:
         # QUICK PATH has been clicked. Now, has the the distance been defined?
         RA_EXIST =  not df['Ra'].isnull().all() # Check if all the values are null (meanning Ra is not defined)
@@ -545,7 +555,9 @@ def display_virtual_solvent(update,reset,path, figure,method, dD, dP, dH, greenn
             # Add here the PATH algorithm
             if len(solvent_list) == 1: solvent = df.loc[solvent_list[0]]
             else: solvent = None
+
             dfpath = suggested_path(df[data_filter], ref_solvent = solvent)
+            
             figure['data'][0] = solvents_trace(dfpath, show_path = True)
             # Updates based on the data excluded
             dff = dfpath[list(TABLE_COLUMNS.values())]
@@ -563,7 +575,7 @@ def display_virtual_solvent(update,reset,path, figure,method, dD, dP, dH, greenn
     dfs = dff.sort_values('Ra', ascending= True, inplace = False)[:ndistance]
     
     
-    return figure, dfs.to_dict('records'), greenness, ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange, method, dDinput, dPinput, dHinput, error_path
+    return figure, dfs.to_dict('records'), greenness, ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange, method, dDinput, dPinput, dHinput, error_path, None
 
 
 # I need this lines to upload the images

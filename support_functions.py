@@ -215,6 +215,7 @@ def suggested_path(df, ref_solvent = None, min_score = 1.0):
     else:
         ref_GSK = ref_solvent['Composite score']
         solvent_path.append(ref_solvent['Solvent Name'])
+    
     while True:
         # Filter and sort out the less green
         df1 = (df[(df['Composite score'] > ref_GSK) & (df['Ra'] > 0.0)]).sort_values(by = 'Ra', inplace = False)
@@ -225,8 +226,13 @@ def suggested_path(df, ref_solvent = None, min_score = 1.0):
         ref_solvent = df1.iloc[0]
         solvent_path.append(ref_solvent['Solvent Name'])
         ref_GSK = ref_solvent['Composite score']
-        
-    return df.loc[solvent_path]
+
+    
+    # In case some labels are not found, this workaround must be done
+    index = df.index.intersection(solvent_path) # Form the intersection of two index objects
+    # Now I have the index, I can locate the values and sort them again by Ra
+    return (df.loc[index]).sort_values(by = 'Ra', inplace = False)
+
 
 def create_annotations(df):
     """

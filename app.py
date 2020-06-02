@@ -108,7 +108,7 @@ INTRO_TEXT = [html.Summary(html.B('How does it work?')),\
                       html.B('HSP coordinates'), ' of your solute from known functional solvent(s) or to manually enter the values. Then click ', html.B('UPDATE.')]),\
               html.P(['(2) The solute is highlighted in the ', html.B('Hansen space.'), ' Use the mouse to explore neighboring solvents. Click on the solvent or select it from the table to find more information.']),
               html.P(['(3) The ', html.B('Selection table'),' ranks the solvents based on the distance R', html.Sub('a'), ' to your solute, and specifies G.']),
-              html.P(['(4) Click ', html.B('QUICK PATH'), ' to view see a quick testing route towards a green and functional solvent.']),
+              html.P(['(4) Click ', html.B('QUICK PATH'), ' to see a quick testing route towards a green and functional solvent.']),
               html.P(['(5) Use the ', html.B('Advanced options'), ' to refine your search. Click  ', html.B('UPDATE'), ' to apply your changes.'])]
 
 REFERENCES_TEXT0 = ['Hansen solubility ', html.A('theory and parameters', href = 'https://www.stevenabbott.co.uk/practical-solubility/hsp-basics.php', target='_blank'), ' (Last accessed: 2018-10-22)', \

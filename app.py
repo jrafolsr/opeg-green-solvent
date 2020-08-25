@@ -117,7 +117,7 @@ REFERENCES_TEXT0 = ['Hansen solubility ', html.A('theory and parameters', href =
                      ' and ', html.A('[2]', href = 'https://pubs.rsc.org/en/content/articlelanding/2011/gc/c0gc00918k', target='_blank'), html.Br(),\
                      'GHS statements from ', html.A('PubChem', href = 'https://pubchem.ncbi.nlm.nih.gov/', target='_blank'), ' (Last accessed: 2019-05-30)',\
                      ' and ', html.A('European Chemicals Agency (ECHA) C&L Inventory', href = 'https://echa.europa.eu/information-on-chemicals/cl-inventory-database/', target='_blank'), ' (Last accessed: 2019-05-30)']
-REFERENCES_TEXT1 = ['Find the publication ', html.A('here', href = 'https://onlinelibrary.wiley.com/journal/15214095', target='_blank'), html.Br(),
+REFERENCES_TEXT1 = ['Find the publication here (soon available)', html.Br(),
                      'Made by the ', html.A('Organic Photonics and Electronics Group (OPEG)', href = 'http://www.opeg-umu.se/', target='_blank')] 
 
 

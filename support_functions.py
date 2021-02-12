@@ -10,6 +10,11 @@ from pandas import read_excel
 import plotly.graph_objs as go
 
 HANSEN_COORDINATES = ['dD - Dispersion','dP - Polarity','dH - Hydrogen bonding']
+WASTE = ['Incineration','Recycling','Biotreatment','VOC Emissions'] # Columns' names defining the waste score
+HEALTH = ['Health Hazard', 'Exposure Potential']                    # Columns' names defining the health score
+ENVIRONMENT = ['Aquatic Impact', 'Air Impact']                      # Idem
+SAFETY = ['Flammability and Explosion', 'Reactivity and Stability'] #Idem
+
 
 df2 = read_excel('solventSelectionTool_table.xlsx', sheet_name = 1, header = 0, usecols=(0,1))
 df2.set_index('Statements', inplace=True, drop=True)
@@ -27,19 +32,8 @@ def solvents_trace(df, show_path = False):
     y = df['dP - Polarity']
     z = df['dH - Hydrogen bonding']
     
-    costumdata = df[['Melting Point (°C)', 'Boiling Point (°C)', 'Ra']]    
-    
-    if df['Ra'].isnull().all():
-        # If Ra has not been defined, the  hover template looks like this
-        hovertemplate = '<b>%{text}</b><br>' +\
-                                         '%{hovertext}<br>' +\
-                                         'dD = %{x:.1f}<br>dP = %{y:.1f}<br>dH = %{z:.1f} <extra>Ra = n/a <br>mp  = %{customdata[0]:.0f} °C<br>bp  = %{customdata[1]:.0f} °C</extra>'
-#        size = 6
-    else:
-        # If it has been defined, looks like this
-        hovertemplate = '<b>%{text}</b><br>' +\
-                                         '%{hovertext}<br>' +\
-                                         'dD = %{x:.1f}<br>dP = %{y:.1f}<br>dH = %{z:.1f} <extra>Ra = %{customdata[2]:.1f}<br>mp  = %{customdata[0]:.0f} °C<br>bp  = %{customdata[1]:.0f} °C</extra>'
+    hovertemplate = ['<b>{0:s}</b><br>Score = {1:.1f}<br>dD = {2:.1f}<br>dP = {3:.1f}<br>dH = {4:.1f} <extra>Ra = {5:.1f}<br>mp  = {6:.0f} °C<br>bp  = {7:.0f} °C<br>η  = {8:.2g} mPa∙s<br>𝜎  = {9:.2g} mN/m</extra>'.format(*data[['Solvent Name','Composite score','dD - Dispersion', 'dP - Polarity', 'dH - Hydrogen bonding' ,'Ra', 'Melting Point (°C)','Boiling Point (°C)', 'Viscosity (mPa.s)', 'Surface Tension (mN/m)']]) for index, data in df.iterrows()]  
+                  
                                          
     # Some function that scales the size with the greeness score                                     
     size = 2*np.sqrt(3) * 3**(df['Composite score']/6).values
@@ -52,7 +46,7 @@ def solvents_trace(df, show_path = False):
     else: mode = 'markers'
     
     trace = go.Scatter3d(x = x, y = y, z = z,\
-                         customdata = costumdata, mode=mode,\
+                         mode=mode,\
                          marker=dict(color = df['Composite score'],
                                     colorscale = 'RdYlGn',
                                     size = size,
@@ -68,8 +62,7 @@ def solvents_trace(df, show_path = False):
                                     ),\
                         line = dict(color = 'rgb(50, 50, 50)', width = 3, dash = 'dot'),\
                         hovertemplate = hovertemplate,
-                        text = df['Solvent Name'],\
-                        hovertext = [f'Score  = {value:.1f}' for value in df['Composite score']])
+                        text = df['Solvent Name'])
 
     return trace
 
@@ -87,21 +80,25 @@ def update_Ra(hansen_coordinates, reference = [None] * 3):
 
 def create_report(data = None):
     if data is None:
+        # text = [html.H3('Solvent Information'),
+        #         html.P('CAS', title = 'The CAS universally identifies the solvent'),
+        #         html.P('Hansen coordinates: dD, dP, dH', title = 'The HSP of the solvent'),
+        #         html.P('Melting Point: nan, boiling point: nan', title = 'Information about the melting and boiling points of the solvent'),
+        #         html.P('Viscosity:  nan,  surface tension: nan', title = 'Information about the viscosity and surface tension of the solvent'),
+        #         html.P(html.B('GSK green solvent selection scores')),
+        #         html.P("GSK score: nan, User's adapted score: nan", title = 'The higher the "greener" the solvent is'),
+        #         html.P('Detailed information of the scores of the solvent'),
+        #         html.B('Globally harmonized System of Classification and Labelling of Chemical'),
+        #         html.P('Detailed information about the classification and labelling of the solvent'),
+        #         ]
         text = [html.H3('Solvent Information'),
-                html.P('CAS', title = 'The CAS universally identifies the solvent'),
-                html.P('Hansen coordinates: dD, dP, dH', title = 'The HSP of the solvent'),
-                html.P('Melting Point: \t \t Boiling point:', title = 'Information about the melting a boiling points of the solvent'),
-                html.P(html.B('GSK green solvent selection scores')),
-                html.P("GSK score: x, User's adapted score: x", title = 'The higher the "greener" the solvent is'),
-                html.P('Detailed information of the scores of the solvent'),
-                html.B('Globally harmonized System of Classification and Labelling of Chemical'),
-                html.P('Detailed information about the classification and labelling of the solvent'),
+                html.P('Click on a solvent from the Hansen Space plot or from the Selection table to display relevant information about it.')
                 ]
         return text
     else:
         # Indices string
         scores = ''
-        for label in data.index[8:18]:
+        for label in WASTE + ENVIRONMENT + HEALTH + SAFETY:
             scores += '{:s}: {:.1f}; '.format(label, data.loc[label])
             
         # Hazard string
@@ -140,9 +137,10 @@ def create_report(data = None):
                                  title = 'Chemical strcuture of {}'.format(data['Solvent Name']),\
                                 style = {'width' : '250px','max-height' : '125px','float':'right', 'margin-left' : '10px'}),
                 html.H3('{}'.format(data['Solvent Name'])),
-                html.P('CAS: {}'.format(data['CAS Number'])),
+                html.P(['CAS: ', html.A(data['CAS Number'], href = 'https://pubchem.ncbi.nlm.nih.gov/compound/{}'.format(data['CAS Number']), target='_blank')]),
                 html.P('Hansen coordinates: dD = {:.1f}, dP = {:.1f}, dH = {:.1f}'.format(*data[HANSEN_COORDINATES])),
-                html.P('Melting Point: {:.0f}°C \t \t Boiling point:  {:.0f}°C'.format(data['Melting Point (°C)'], data['Boiling Point (°C)'])),
+                html.P('Melting Point: {:.0f} °C, boiling point:  {:.0f} °C'.format(data['Melting Point (°C)'], data['Boiling Point (°C)'])),
+                html.P('Viscosity: {:.2f} mPa∙s, surface tension:  {:.2f} mN/m'.format(data['Viscosity (mPa.s)'], data['Surface Tension (mN/m)'])),
                 html.P(html.B('GSK green solvent selection scores')),
                 html.P("GSK score: {:.1f}, User's adapted score: {:.1f}".format(data['GSK score'],data['Composite score'])),
                 html.P(scores),

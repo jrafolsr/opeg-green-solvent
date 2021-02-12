@@ -10,6 +10,7 @@ import plotly.graph_objs as go
 import pandas as pd
 import flask
 from support_functions import update_Ra, create_report, solvents_trace, df2,filter_by_hazard, GSK_calculator, f2s, suggested_path, create_annotations
+from math import log10
 
 # Folder where I can find the local resources, such as images
 STATIC_PATH = 'static'
@@ -40,11 +41,18 @@ SAFETY = ['Flammability and Explosion', 'Reactivity and Stability'] #Idem
 
 # Temperature range limits (min and max) that will be used in the Range Slidere later on. And offset of 5°C is added
 TEMPERATURE_RANGE = [df['Boiling Point (°C)'].min(axis = 0)-5, df['Boiling Point (°C)'].max(axis = 0)+5]
+
+# Viscosity range limits (min and max) that will be used in the Range Slidere later on. And offset of 5 % is added
+VISCOSITY_RANGE = [log10(df['Viscosity (mPa.s)'].min(axis = 0)*0.95), log10(df['Viscosity (mPa.s)'].max(axis = 0)*1.05)]
+
+# Temperature range limits (min and max) that will be used in the Range Slidere later on. And offset of 5°C is added
+SURFACE_TENSION_RANGE = [df['Surface Tension (mN/m)'].min(axis = 0)*0.95, df['Surface Tension (mN/m)'].max(axis = 0)*1.05]
+
 # Columns on the displayed table (WEIRD WAY, BUT RE-ADAPTED FROM BEFORE)
 TABLE_COLUMNS = {'Solvent': 'Solvent Name', 'Ra' : 'Ra', 'G': 'Composite score',\
-                 'bp (°C)' : 'Boiling Point (°C)'}
-TYPE_COLUMNS = ['text', 'numeric', 'numeric', 'numeric']
-FORMAT_COLUMNS = [Format(), Format(precision = 2), Format(precision = 2), Format(precision = 3)]
+                 'bp(°C)' : 'Boiling Point (°C)', 'η(mPa∙s)' : 'Viscosity (mPa.s)', '𝜎(mN/m)' : 'Surface Tension (mN/m)'}
+TYPE_COLUMNS = ['text', 'numeric', 'numeric', 'numeric', 'numeric', 'numeric']
+FORMAT_COLUMNS = [Format(), Format(precision = 2), Format(precision = 2), Format(precision = 3), Format(precision = 3), Format(precision = 3)]
 # Prepare the list to feed the table, adding the format two the desired precision
 TABLE_DCC = [{"type" : coltype, "name": key, "id": value, 'format' : colformat} for key, value, coltype, colformat in zip(TABLE_COLUMNS.keys(), TABLE_COLUMNS.values(), TYPE_COLUMNS, FORMAT_COLUMNS)]
 
@@ -101,7 +109,7 @@ app.config['suppress_callback_exceptions'] = True
 # Some text saved in variables
 INTRO_TEXT = [html.Summary(html.B('How does it work?')),\
               html.P(['This app helps you to identify functional and environmentally green solvents. The likelihood to be functional is based on ',
-              html.Span('Hansen solubility parameters (HSP)', title = 'Dispersion (dD), Polarity (dP) and Hydrogen bonding (dH)', className = 'hover-span'),', where a shorter distance in Hansen space ',  html.Span(['(R', html.Sub('a'),')'], title = r'Ra = [4(dD2 - dD1)^2 + (dP2 - dP1)^2 + (dH2 - dH1)^2]^(1/2)', className = 'hover-span'), ' correspond to a more similar solvent. The '  ,\
+              html.Span('Hansen solubility parameters (HSP)', title = 'Dispersion (dD), Polarity (dP) and Hydrogen bonding (dH)', className = 'hover-span'),', where a shorter distance in Hansen space ',  html.Span(['(R', html.Sub('a'),')'], title = r'Ra = [4(dD2 - dD1)^2 + (dP2 - dP1)^2 + (dH2 - dH1)^2]^(1/2)', className = 'hover-span'), ' corresponds to a more similar solvent. The '  ,\
               html.Span(' greenness or composite score (G)', title = 'G = (Waste x Environemt x Health x Safety)^(1/4)', className = 'hover-span'),\
               ' is based on the GlaxoSmithKline (GSK) solvent sustainability guide, where a higher G means a greener alternative.']),\
               html.P(['(1) Use the radiobuttons on the left panel to either estimate the ',\
@@ -122,8 +130,8 @@ REFERENCES_TEXT1 = ['Find the publication here (soon available)', html.Br(),
 
 
 app.layout = html.Div([html.Div(className = 'row header-container',  children = [
-       html.Img(src = r'\static\dash-logo.png',\
-                alt = 'plotly-logo',id = 'logo', ),
+       html.A(html.Img(src = r'\static\dash-logo.png',\
+                alt = 'plotly-logo',id = 'logo'), href  = 'https://plotly.com/dash/', target='_blank'),
        html.H4('A Tool for the Selection of a Functional Green Solvent',
                          id = 'header-title'),
        html.A(html.Img(src = r'\static\opeg-logo.png',\
@@ -214,6 +222,7 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                                         min = 5,
                                         max = N_SOLVENTS,
                                         value = N_SOLVENTS,
+                                        updatemode='drag',                                        
                                         step = None,
                                         marks = {5: '5', 10 : '10', 25: '25', 50: '50', 100 : '100', N_SOLVENTS : 'all'}
                                         )
@@ -226,11 +235,51 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                                         id = 'greenness-filter',
                                         min = 0,
                                         max = 8,
+                                        updatemode='drag',                                        
                                         value = 0,
                                         step = 1,
-                                        marks = dict((i, str(i)) for i in range(0,9,2))
+                                        marks = dict((i, str(i)) for i in range(0,9,4))
                                         )
                                 ]),
+                                html.Div(id = 'div-temperature-range',className = 'filters-type', children = [
+                                    html.P(['Show solvents with the boiling point within ', html.Span(id='output-temperature-slider')]),
+                                    dcc.RangeSlider(
+                                        id='temperatures-range-slider',
+                                        min = TEMPERATURE_RANGE[0],
+                                        max = TEMPERATURE_RANGE[1],
+                                        step = 5,
+                                        updatemode='drag',
+                                        value = TEMPERATURE_RANGE,
+                                        marks={
+                                            0: {'label': '0°C', 'style': {'color': '#77b0b1'}},
+                                            100: {'label': '100°C', 'style': {'color': '#f50'}}}
+                                    )]
+                               ),
+                                html.Div(id = 'div-viscosity-range',className = 'filters-type', children = [
+                                    html.P(['Show solvents with the viscosity within ', html.Span(id='output-viscosity-slider')]),
+                                    dcc.RangeSlider(
+                                        # I need to make a non-linear slider due to the big range of values... (might be that some are wrong though)
+                                        id='viscosity-slider',
+                                        min = VISCOSITY_RANGE[0],
+                                        max = VISCOSITY_RANGE[1],
+                                        step = 0.1,
+                                        updatemode='drag',
+                                        value = [value for value in VISCOSITY_RANGE],
+                                        marks = {value : f'{10**value:.0g}' for value in VISCOSITY_RANGE}
+                                    )]
+                               ),
+                                html.Div(id = 'div-surface-tension-range',className = 'filters-type', children = [
+                                    html.P(['Show solvents with the surface tension within ', html.Span(id='output-surface-tension-slider')]),
+                                    dcc.RangeSlider(
+                                        id='surface-tension-slider',
+                                        min = SURFACE_TENSION_RANGE[0],
+                                        max = SURFACE_TENSION_RANGE[1],
+                                        step = 5,
+                                        updatemode='drag',
+                                        value = SURFACE_TENSION_RANGE,
+                                        marks = {value : f'{value:.0f}' for value in SURFACE_TENSION_RANGE}
+                                    )]
+                               ),                                 
                                html.Div(id = 'div-hazard-list',className = 'filters-type', children = [
                                html.P('Exclude solvents by hazard label'),
                                     dcc.Dropdown(
@@ -241,19 +290,6 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                                         multi = True,
                                         style = {'text-align' : 'left'}),
                                 ]),
-                               html.Div(id = 'div-temperature-range',className = 'filters-type', children = [
-                                    html.P(['Show solvents with the boiling point within ', html.Span(id='output-temperature-slider')]),
-                                    dcc.RangeSlider(
-                                        id='temperatures-range-slider',
-                                        min=TEMPERATURE_RANGE[0],
-                                        max=TEMPERATURE_RANGE[1],
-                                        step = 5,
-                                        value = TEMPERATURE_RANGE,
-                                        marks={
-                                            0: {'label': '0°C', 'style': {'color': '#77b0b1'}},
-                                            100: {'label': '100°C', 'style': {'color': '#f50'}}}
-                                    )]
-                               ),
                                 html.Div(id = 'checklist-div', className = 'filters-type',  children = [                                
                                html.P(html.Span('Define your own composite score (G)', className = 'hover-span', title = 'Uncheck the categories to be excluded from the G calculation')),
                                html.Div(style = {'text-align' : 'left'} , children = [
@@ -327,7 +363,7 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
         ]),
         #----------- Third column, where the info goes (how it works + solvent info) ------------------------
         html.Div(id = 'column-right-div',className = 'column right', children = [
-            html.Div(id = 'intro_div', className = 'container', children = 
+            html.Div(id = 'intro-div', className = 'container', children = 
                     html.Details(INTRO_TEXT,\
                                  id = 'div-instructions')
                     ),
@@ -357,7 +393,23 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
     dash.dependencies.Output('output-temperature-slider', 'children'),
     [dash.dependencies.Input('temperatures-range-slider', 'value')])
 def update_temperature_output(value):
-    return '{}°C and {} °C'.format(*value)
+    return '{} and {} °C'.format(*value)
+
+# Updates the  information on the surface tension filter 
+@app.callback(
+    dash.dependencies.Output('output-surface-tension-slider', 'children'),
+    [dash.dependencies.Input('surface-tension-slider', 'value')])
+def update_surface_tension_output(value):
+    return '{:.0f} and {:.0f} mN/m'.format(*value)
+
+# Updates the  information on the viscosity filter 
+@app.callback(
+    dash.dependencies.Output('output-viscosity-slider', 'children'),
+    [dash.dependencies.Input('viscosity-slider', 'value')])
+def update_viscosity_output(value):
+    value = [10**v for v in value]
+    return '{:.2g} and {:.2g} mPa∙s'.format(*value)
+
 
 # Selector of the method to choose your solute parameters, hides/shows the Input
 @app.callback([Output('hansen-div', 'hidden'),
@@ -426,6 +478,8 @@ def update_distance_filter(value):
                Output('checklist-environment', 'value'),
                Output('checklist-safety', 'value'),
                Output('temperatures-range-slider', 'value'),
+               Output('viscosity-slider', 'value'),
+               Output('surface-tension-slider', 'value'),
                Output('radiobutton-route', 'value'),
                Output('dD-input', 'value'),
                Output('dP-input', 'value'),
@@ -448,8 +502,12 @@ def update_distance_filter(value):
                State('checklist-health', 'value'),
                State('checklist-environment', 'value'),
                State('checklist-safety', 'value'),
-               State('temperatures-range-slider', 'value')])
-def main_plot(update,reset,path, figure,method, dD, dP, dH, greenness,ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange):
+               State('temperatures-range-slider', 'value'),
+               State('viscosity-slider', 'value'),
+               State('surface-tension-slider', 'value')])
+def main_plot(update,reset,path, figure,method, dD, dP, dH, greenness, ndistance,\
+              solvent_list, hazard_list, waste, health, environment, safety,\
+                  temperature_range, viscosity_range, stension_range):
     # Determine which button has been clicked
     ctx = dash.callback_context
 
@@ -461,8 +519,8 @@ def main_plot(update,reset,path, figure,method, dD, dP, dH, greenness,ndistance,
         
     # If the Reset button is click, reinitialize all the values
     if button_id == 'button-reset':
-        dD, dP, dH, greenness, ndistance,method,solvent_list, hazard_list, waste, health, environment, safety, Trange = \
-        None, None, None, 0, N_SOLVENTS, 1, [], [], WASTE, HEALTH, ENVIRONMENT, SAFETY, TEMPERATURE_RANGE
+        dD, dP, dH, greenness, ndistance,method,solvent_list, hazard_list, waste, health, environment, safety, temperature_range, viscosity_range, stension_range = \
+        None, None, None, 0, N_SOLVENTS, 1, [], [], WASTE, HEALTH, ENVIRONMENT, SAFETY, TEMPERATURE_RANGE, VISCOSITY_RANGE, SURFACE_TENSION_RANGE
     
     # Choose the HSP based on the selected method by the user
     if method == 0:
@@ -531,9 +589,16 @@ def main_plot(update,reset,path, figure,method, dD, dP, dH, greenness,ndistance,
     hazard_filter = filter_by_hazard(hazard_list, df['Hazard Labels'])
     
     # 3. Creates the boiling temperature filter based in the range slider
-    temperature_filter = (df['Boiling Point (°C)'] > Trange[0]) & (df['Boiling Point (°C)'] < Trange[1])
-    # 4. Creates the overall filter, an AND product of all he filters (only the all True will survive)
-    data_filter = greenness_filter & hazard_filter & temperature_filter
+    temperature_filter = ((df['Boiling Point (°C)'] > temperature_range[0]) & (df['Boiling Point (°C)'] < temperature_range[1])) | df['Boiling Point (°C)'].isnull()
+    
+    # 4. Creates the viscosity filter based in the range slider, including all the nan
+    viscosity_filter = ((df['Viscosity (mPa.s)'] > 10**viscosity_range[0]) & (df['Viscosity (mPa.s)'] < 10**viscosity_range[1])) | df['Viscosity (mPa.s)'].isnull()
+    
+    # 5. Creates the surface tension filter based in the range slider, including all the nan
+    surface_tension_filter = ((df['Surface Tension (mN/m)'] > stension_range[0]) & (df['Surface Tension (mN/m)'] < stension_range[1]) ) | df['Surface Tension (mN/m)'].isnull()
+    
+    # 6. Creates the overall filter, an AND product of all he filters (only the all True will survive)
+    data_filter = greenness_filter & hazard_filter & temperature_filter & viscosity_filter & surface_tension_filter
     
 
     
@@ -575,7 +640,9 @@ def main_plot(update,reset,path, figure,method, dD, dP, dH, greenness,ndistance,
     dfs = dff.sort_values('Ra', ascending= True, inplace = False)[:ndistance]
     
     
-    return figure, dfs.to_dict('records'), greenness, ndistance, solvent_list, hazard_list, waste, health, environment, safety, Trange, method, dDinput, dPinput, dHinput, error_path, None
+    return figure, dfs.to_dict('records'), greenness, ndistance, solvent_list, hazard_list, waste, health, environment, safety,\
+        temperature_range, viscosity_range, stension_range,\
+            method, dDinput, dPinput, dHinput, error_path, None
 
 
 # I need this lines to upload the images

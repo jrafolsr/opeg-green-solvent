@@ -101,7 +101,8 @@
 	text-align: center;
 	padding: 5px;
 	margin: 5px 0;
-	background-color:  #DCDCDC;
+	/*background-color:  #DCDCDC;*/
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
 }
 
 #logo {
@@ -139,6 +140,14 @@
     vertical-align:middle;
 	padding: 10px;
 }
+#report {
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+    }
+    
+#intro-div {
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+    }
+
 /*-------- Hovering stuff ------- */
 
 .hover-span {

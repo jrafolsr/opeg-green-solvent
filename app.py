@@ -154,7 +154,7 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                             html.Div(id = 'solvent-list-div', hidden = False, children = [
                                 dcc.Dropdown(
                                     id='solvent-list',
-                                    options=[{'label': name, 'value': i} for name,i in zip(df['Solvent Name'],df.index)],
+                                    options=[{'label': name, 'value': i, 'title' : f'CAS: {cas}'} for name,i, cas in zip(df['Solvent Name'],df.index, df['CAS Number'])],
                                     value = [],
                                     placeholder = "Choose a solvent...",
                                     multi = True,

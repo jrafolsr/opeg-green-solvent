@@ -134,8 +134,8 @@
 }
 
 #div-fig {
-	width : 45vw;
-	height : 70vh;
+/*	width : 45vw;
+	height : 70vh;*/
 	display:table-cell;
     vertical-align:middle;
 	padding: 10px;

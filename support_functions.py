@@ -140,8 +140,13 @@ def create_report(data = None):
                 html.P(['CAS: ', html.A(data['CAS Number'], href = 'https://pubchem.ncbi.nlm.nih.gov/compound/{}'.format(data['CAS Number']), target='_blank')]),
                 html.P('Hansen coordinates: dD = {:.1f}, dP = {:.1f}, dH = {:.1f}'.format(*data[HANSEN_COORDINATES])),
                 html.P('Melting Point: {:.0f} °C, boiling point:  {:.0f} °C'.format(data['Melting Point (°C)'], data['Boiling Point (°C)'])),
-                html.P('Viscosity: {:.2f} mPa∙s, surface tension:  {:.2f} mN/m'.format(data['Viscosity (mPa.s)'], data['Surface Tension (mN/m)'])),
+                html.P([
+                    'Viscosity*: {:.2f} mPa∙s, surface tension*:  {:.2f} mN/m'.format(data['Viscosity (mPa.s)'], data['Surface Tension (mN/m)']), 
+                    html.Br(),
+                    html.Span(html.I(html.Small('* Taken from different sources between 20 °C and 40 °C.  DISCLAIMER: Do not use these values for citation purposes. ')))
+                    ]),
                 html.P(html.B('GSK green solvent selection scores')),
+
                 html.P("GSK score: {:.1f}, User's adapted score: {:.1f}".format(data['GSK score'],data['Composite score'])),
                 html.P(scores),
                 html.B('Globally harmonized System of Classification and Labelling of Chemical'),
@@ -255,3 +260,12 @@ def create_annotations(df):
                 ))
         k += 1
     return annotations
+
+def number2scientific(x):
+    """Translates a number to a scientific notation in html + dash"""
+    s = f'{x:.2e}'
+    base, exponent = s.split('e')
+    base = float(base)
+    exponent= int(exponent)
+    return ['{:.1f}∙10'.format(float(base)), html.Sup('{}'.format(exponent))]
+    

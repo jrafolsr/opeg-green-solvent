@@ -3,13 +3,13 @@
 import dash
 import dash_core_components as dcc
 import dash_table
-from dash_table.Format import Format
+from dash_table.Format import Format, Scheme, Align
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
 import pandas as pd
 import flask
-from support_functions import update_Ra, create_report, solvents_trace, df2,filter_by_hazard, GSK_calculator, f2s, suggested_path, create_annotations
+from support_functions import update_Ra, create_report, solvents_trace, df2,filter_by_hazard, GSK_calculator, f2s, suggested_path, create_annotations, number2scientific
 from math import log10
 
 # Folder where I can find the local resources, such as images
@@ -52,7 +52,11 @@ SURFACE_TENSION_RANGE = [df['Surface Tension (mN/m)'].min(axis = 0)*0.95, df['Su
 TABLE_COLUMNS = {'Solvent': 'Solvent Name', 'Ra' : 'Ra', 'G': 'Composite score',\
                  'bp(°C)' : 'Boiling Point (°C)', 'η(mPa∙s)' : 'Viscosity (mPa.s)', '𝜎(mN/m)' : 'Surface Tension (mN/m)'}
 TYPE_COLUMNS = ['text', 'numeric', 'numeric', 'numeric', 'numeric', 'numeric']
-FORMAT_COLUMNS = [Format(), Format(precision = 2), Format(precision = 2), Format(precision = 3), Format(precision = 3), Format(precision = 3)]
+FORMAT_COLUMNS = [Format(), Format(precision = 1, scheme=Scheme.fixed),\
+                  Format(precision = 1, scheme=Scheme.fixed),\
+                  Format(precision = 0, scheme=Scheme.fixed, fill= ' ', padding_width=4),\
+                  Format(precision = 1, scheme = Scheme.fixed, fill= ' ', padding_width=4),\
+                  Format(precision = 0, scheme=Scheme.fixed, fill = ' ', padding_width=4)]
 # Prepare the list to feed the table, adding the format two the desired precision
 TABLE_DCC = [{"type" : coltype, "name": key, "id": value, 'format' : colformat} for key, value, coltype, colformat in zip(TABLE_COLUMNS.keys(), TABLE_COLUMNS.values(), TYPE_COLUMNS, FORMAT_COLUMNS)]
 
@@ -265,7 +269,7 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                                         step = 0.1,
                                         updatemode='drag',
                                         value = [value for value in VISCOSITY_RANGE],
-                                        marks = {value : f'{10**value:.0g}' for value in VISCOSITY_RANGE}
+                                        marks = {value : f'{10**value:2.0e}' for value in VISCOSITY_RANGE}
                                     )]
                                ),
                                 html.Div(id = 'div-surface-tension-range',className = 'filters-type', children = [
@@ -344,7 +348,7 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                                  # height = '30vh',
                                  width = '100%',
                                  border = 'thin lightgrey solid'),
-                    style_cell = {'minWidth': '0px', 'width': '20px','maxWidth': '75px', 'text-align':'center','textOverflow': 'ellipsis'},
+                    style_cell = {'minWidth': '0px', 'width': '20px','maxWidth': '75px', 'text-align':'right','textOverflow': 'ellipsis'}
                     )
                 ])
             ])                          
@@ -356,8 +360,8 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                       figure= { "data": traces,
                                 "layout": plot_layout,
                                 },
-                      config={"editable": False},
-                      style = {'padding-bottom' : '10vh', 'max-width' : '42vw'}
+                      config={'editable' : False, 'responsive' : True},
+                      style = { 'vertical-align': 'top', 'width' : '40vw', 'height': '60vh'}
                       )
                 ]),
         ]),
@@ -407,9 +411,9 @@ def update_surface_tension_output(value):
     dash.dependencies.Output('output-viscosity-slider', 'children'),
     [dash.dependencies.Input('viscosity-slider', 'value')])
 def update_viscosity_output(value):
-    value = [10**v for v in value]
-    return '{:.2g} and {:.2g} mPa∙s'.format(*value)
-
+    # value = [10**v for v in value]
+    # return '{:.1e} and {:.1e} mPa∙s'.format(*value)
+    return [' '] + number2scientific(10**value[0]) + [' and '] + number2scientific(10**value[1]) + [' mPa∙s']
 
 # Selector of the method to choose your solute parameters, hides/shows the Input
 @app.callback([Output('hansen-div', 'hidden'),
@@ -469,6 +473,7 @@ def update_distance_filter(value):
 # Main callaback, which gathers all the info and responds to it
 @app.callback([Output('main-plot', 'figure'),
                Output('table', 'data'),
+               Output('table', 'sort_by'),
                Output('greenness-filter','value'),
                Output('distance-filter', 'value'),
                Output('solvent-list', 'value'),
@@ -638,9 +643,9 @@ def main_plot(update,reset,path, figure,method, dD, dP, dH, greenness, ndistance
     # Sorts by the ascending distance in the Hansen space, by default
 
     dfs = dff.sort_values('Ra', ascending= True, inplace = False)[:ndistance]
+    sort_by = []
     
-    
-    return figure, dfs.to_dict('records'), greenness, ndistance, solvent_list, hazard_list, waste, health, environment, safety,\
+    return figure, dfs.to_dict('records'), sort_by, greenness, ndistance, solvent_list, hazard_list, waste, health, environment, safety,\
         temperature_range, viscosity_range, stension_range,\
             method, dDinput, dPinput, dHinput, error_path, None
 

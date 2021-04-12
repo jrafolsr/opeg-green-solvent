@@ -3,7 +3,7 @@
 import dash
 import dash_core_components as dcc
 import dash_table
-from dash_table.Format import Format, Scheme, Align
+from dash_table.Format import Format, Scheme
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
@@ -40,17 +40,19 @@ ENVIRONMENT = ['Aquatic Impact', 'Air Impact']                      # Idem
 SAFETY = ['Flammability and Explosion', 'Reactivity and Stability'] #Idem
 
 # Temperature range limits (min and max) that will be used in the Range Slidere later on. And offset of 5°C is added
-TEMPERATURE_RANGE = [df['Boiling Point (°C)'].min(axis = 0)-5, df['Boiling Point (°C)'].max(axis = 0)+5]
+min_bp = df['Boiling Point (°C)'].min(axis = 0) - 5
+min_bp = min_bp if min_bp < 25 else 25
+TEMPERATURE_RANGE = [min_bp, round(df['Boiling Point (°C)'].max(axis = 0)+5, -2)]
 
 # Viscosity range limits (min and max) that will be used in the Range Slidere later on. And offset of 5 % is added
-VISCOSITY_RANGE = [log10(df['Viscosity (mPa.s)'].min(axis = 0)*0.95), log10(df['Viscosity (mPa.s)'].max(axis = 0)*1.05)]
+VISCOSITY_RANGE = [log10(df['Viscosity (mPa.s)'].min(axis = 0)*0.95), round(log10(df['Viscosity (mPa.s)'].max(axis = 0)*1.05))]
 
 # Temperature range limits (min and max) that will be used in the Range Slidere later on. And offset of 5°C is added
-SURFACE_TENSION_RANGE = [df['Surface Tension (mN/m)'].min(axis = 0)*0.95, df['Surface Tension (mN/m)'].max(axis = 0)*1.05]
+SURFACE_TENSION_RANGE = [int(round(df['Surface Tension (mN/m)'].min(axis = 0)*0.95, -1)), int(round(df['Surface Tension (mN/m)'].max(axis = 0)*1.05, -1))]
 
 # Columns on the displayed table (WEIRD WAY, BUT RE-ADAPTED FROM BEFORE)
 TABLE_COLUMNS = {'Solvent': 'Solvent Name', 'Ra' : 'Ra', 'G': 'Composite score',\
-                 'bp(°C)' : 'Boiling Point (°C)', 'η(mPa∙s)' : 'Viscosity (mPa.s)', '𝜎(mN/m)' : 'Surface Tension (mN/m)'}
+                 'bp (°C)' : 'Boiling Point (°C)', 'η (mPa∙s)' : 'Viscosity (mPa.s)', '𝜎 (mN/m)' : 'Surface Tension (mN/m)'}
 TYPE_COLUMNS = ['text', 'numeric', 'numeric', 'numeric', 'numeric', 'numeric']
 FORMAT_COLUMNS = [Format(), Format(precision = 1, scheme=Scheme.fixed),\
                   Format(precision = 1, scheme=Scheme.fixed),\
@@ -59,9 +61,6 @@ FORMAT_COLUMNS = [Format(), Format(precision = 1, scheme=Scheme.fixed),\
                   Format(precision = 0, scheme=Scheme.fixed, fill = ' ', padding_width=4)]
 # Prepare the list to feed the table, adding the format two the desired precision
 TABLE_DCC = [{"type" : coltype, "name": key, "id": value, 'format' : colformat} for key, value, coltype, colformat in zip(TABLE_COLUMNS.keys(), TABLE_COLUMNS.values(), TYPE_COLUMNS, FORMAT_COLUMNS)]
-
-
-
 
 
 N_SOLVENTS = df.shape[0]
@@ -242,7 +241,7 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                                         updatemode='drag',                                        
                                         value = 0,
                                         step = 1,
-                                        marks = dict((i, str(i)) for i in range(0,9,4))
+                                        marks = dict((i, str(i)) for i in range(0,9,4)),
                                         )
                                 ]),
                                 html.Div(id = 'div-temperature-range',className = 'filters-type', children = [
@@ -256,7 +255,8 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                                         value = TEMPERATURE_RANGE,
                                         marks={
                                             0: {'label': '0°C', 'style': {'color': '#77b0b1'}},
-                                            100: {'label': '100°C', 'style': {'color': '#f50'}}}
+                                            100: {'label': '100°C', 'style': {'color': '#f50'}}},
+                                        pushable = 25
                                     )]
                                ),
                                 html.Div(id = 'div-viscosity-range',className = 'filters-type', children = [
@@ -269,7 +269,8 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                                         step = 0.1,
                                         updatemode='drag',
                                         value = [value for value in VISCOSITY_RANGE],
-                                        marks = {value : f'{10**value:2.0e}' for value in VISCOSITY_RANGE}
+                                        marks = {value : f'{10**value:.1f}' for value in VISCOSITY_RANGE},
+                                        pushable = 0.5
                                     )]
                                ),
                                 html.Div(id = 'div-surface-tension-range',className = 'filters-type', children = [
@@ -281,7 +282,8 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                                         step = 5,
                                         updatemode='drag',
                                         value = SURFACE_TENSION_RANGE,
-                                        marks = {value : f'{value:.0f}' for value in SURFACE_TENSION_RANGE}
+                                        marks = {value : f'{value}' for value in SURFACE_TENSION_RANGE},
+                                        pushable = 5
                                     )]
                                ),                                 
                                html.Div(id = 'div-hazard-list',className = 'filters-type', children = [
@@ -330,7 +332,7 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                 html.H5('Selection table', id = 'title-table', style = {'text-align' : 'center'}),
                 dash_table.DataTable(
                     id='table',
-                    columns = TABLE_DCC, # defined at the beginning
+                    columns = TABLE_DCC, # defined at the beginning,
                     data = df[list(TABLE_COLUMNS.values())].to_dict('records'),
         #            fixed_rows = { 'headers': True, 'data': 0},
                     style_as_list_view = True,
@@ -348,7 +350,7 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                                  # height = '30vh',
                                  width = '100%',
                                  border = 'thin lightgrey solid'),
-                    style_cell = {'minWidth': '0px', 'width': '20px','maxWidth': '75px', 'text-align':'right','textOverflow': 'ellipsis'}
+                    style_cell = {'minWidth': '0px', 'width': '20px','maxWidth': '75px', 'text-align':'right','textOverflow': 'ellipsis'},
                     )
                 ])
             ])                          

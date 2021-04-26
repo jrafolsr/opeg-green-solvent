@@ -134,13 +134,13 @@ REFERENCES_TEXT1 = ['Find the publication here (soon available)', html.Br(),
 
 app.layout = html.Div([html.Div(className = 'row header-container',  children = [
        html.A(html.Img(src = r'\static\dash-logo.png',\
-                alt = 'plotly-logo',id = 'logo'), href  = 'https://plotly.com/dash/', target='_blank'),
+                alt = 'plotly-logo',id = 'logo'), href  = 'https://plotly.com/dash/', target='_blank', style = {'height' : 'auto', 'max-width' : '100%'}),
        html.H4('A Tool for the Selection of a Functional Green Solvent',
                          id = 'header-title'),
        html.A(html.Img(src = r'\static\opeg-logo.png',\
                 alt = 'opeg-logo',\
                     title = 'Organic Electronics and Photonics Group',
-                    id = 'opeg-logo'), href = 'http://www.opeg-umu.se/', target='_blank')          
+                    id = 'opeg-logo'), href = 'http://www.opeg-umu.se/', target='_blank', style = {'height' : 'auto', 'max-width' : '100%'})          
        ]),
        html.Div(className = 'row main-content',  children = [
         #---------- First column where the input options go-----------

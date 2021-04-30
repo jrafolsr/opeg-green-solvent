@@ -55,7 +55,7 @@ def solvents_trace(df, show_path = False):
                                     cmin = 3,
                                     cmid = 6,
                                     cmax = 9,
-                                    colorbar = dict(title = 'Composite<br>    score  ',\
+                                    colorbar = dict(title = 'G',\
                                                 thickness = 20, len = 0.66, x = 0.9, y = 0.5,\
                                                 xanchor = 'center',  yanchor = 'middle'),
                                     line = dict(width = .25, color = 'rgb(50, 50, 50)')

@@ -51,10 +51,11 @@ VISCOSITY_RANGE = [log10(df['Viscosity (mPa.s)'].min(axis = 0)*0.95), round(log1
 SURFACE_TENSION_RANGE = [int(round(df['Surface Tension (mN/m)'].min(axis = 0)*0.95, -1)), int(round(df['Surface Tension (mN/m)'].max(axis = 0)*1.05, -1))]
 
 # Columns on the displayed table (WEIRD WAY, BUT RE-ADAPTED FROM BEFORE)
-TABLE_COLUMNS = {'Solvent': 'Solvent Name', 'Ra' : 'Ra', 'G': 'Composite score',\
+TABLE_COLUMNS = {'Ra' : 'Ra', 'Solvent': 'Solvent Name',  'G': 'Composite score',\
                  'bp (°C)' : 'Boiling Point (°C)', 'η (mPa∙s)' : 'Viscosity (mPa.s)', '𝜎 (mN/m)' : 'Surface Tension (mN/m)'}
-TYPE_COLUMNS = ['text', 'numeric', 'numeric', 'numeric', 'numeric', 'numeric']
-FORMAT_COLUMNS = [Format(), Format(precision = 1, scheme=Scheme.fixed),\
+TYPE_COLUMNS = ['numeric', 'text',  'numeric', 'numeric', 'numeric', 'numeric']
+FORMAT_COLUMNS = [Format(precision = 1, scheme=Scheme.fixed),\
+                  Format(),\
                   Format(precision = 1, scheme=Scheme.fixed),\
                   Format(precision = 0, scheme=Scheme.fixed, fill= ' ', padding_width=4),\
                   Format(precision = 1, scheme = Scheme.fixed, fill= ' ', padding_width=4),\
@@ -110,17 +111,17 @@ app.config['suppress_callback_exceptions'] = True
 
 
 # Some text saved in variables
-INTRO_TEXT = [html.Summary(html.B('How does it work?')),\
+INTRO_TEXT = [html.Summary(id = 'title-how-it-works', children = html.B('How it works? (Click to open)')),\
               html.P(['This app helps you to identify functional and environmentally green solvents. The likelihood to be functional is based on ',
-              html.Span('Hansen solubility parameters (HSP)', title = 'Dispersion (dD), Polarity (dP) and Hydrogen bonding (dH)', className = 'hover-span'),', where a shorter distance in Hansen space ',  html.Span(['(R', html.Sub('a'),')'], title = r'Ra = [4(dD2 - dD1)^2 + (dP2 - dP1)^2 + (dH2 - dH1)^2]^(1/2)', className = 'hover-span'), ' corresponds to a more similar solvent. The '  ,\
+              html.Span('Hansen solubility parameters (HSP)', title = 'Dispersion (dD), Polarity (dP) and Hydrogen bonding (dH)', className = 'hover-span'),', where a shorter distance in Hansen Space ',  html.Span(['(R', html.Sub('a'),')'], title = r'Ra = [4(dD2 - dD1)^2 + (dP2 - dP1)^2 + (dH2 - dH1)^2]^(1/2)', className = 'hover-span'), ' corresponds to a more similar solvent. The '  ,\
               html.Span(' greenness or composite score (G)', title = 'G = (Waste x Environemt x Health x Safety)^(1/4)', className = 'hover-span'),\
               ' is based on the GlaxoSmithKline (GSK) solvent sustainability guide, where a higher G means a greener alternative.']),\
               html.P(['(1) Use the radiobuttons on the left panel to either estimate the ',\
                       html.B('HSP coordinates'), ' of your solute from known functional solvent(s) or to manually enter the values. Then click ', html.B('UPDATE.')]),\
-              html.P(['(2) The solute is highlighted in the ', html.B('Hansen space.'), ' Use the mouse to explore neighboring solvents. Click on the solvent or select it from the table to find more information.']),
-              html.P(['(3) The ', html.B('Selection table'),' ranks the solvents based on the distance R', html.Sub('a'), ' to your solute, and specifies G.']),
+              html.P(['(2) The solute is highlighted in the ', html.B('Hansen Space.'), ' Use the mouse to explore neighboring solvents. Click on the solvent or select it from the table to find more information.']),
+              html.P(['(3) The ', html.B('Selection Table'),' ranks the solvents based on the distance R', html.Sub('a'), ' to your solute, and specifies G.']),
               html.P(['(4) Click ', html.B('QUICK PATH'), ' to see a quick testing route towards a green and functional solvent.']),
-              html.P(['(5) Use the ', html.B('Advanced options'), ' to refine your search. Click  ', html.B('UPDATE'), ' to apply your changes.'])]
+              html.P(['(5) Use the ', html.B('Refinement options'), ' to refine your search. Click  ', html.B('UPDATE'), ' to apply your changes.'])]
 
 REFERENCES_TEXT0 = ['Hansen solubility ', html.A('theory and parameters', href = 'https://www.stevenabbott.co.uk/practical-solubility/hsp-basics.php', target='_blank'), ' (Last accessed: 2018-10-22)', \
                      html.Br(),\
@@ -214,25 +215,12 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
 
                         html.Div(id = 'filters-table-div', children = [
                             html.Details(id = 'filters-details', className = 'container',\
-                                title = 'Advanced options for solvent filtering', children = [
-                                html.Summary(html.B('Advanced options')),
+                                title = 'Click here to open/close', children = [
+                                html.Summary(id = 'refinement-options', children = html.B('Refinement options (click to open)')),
                                 html.Div( children = [
-                                html.Div(id = 'distance-div',className = 'filters-type', children = [                                    
-                                html.P(f'Show the {N_SOLVENTS:d}-first closest solvents:', id = 'distance-filter-text'),  
-
-                                    dcc.Slider(
-                                        id = 'distance-filter',
-                                        min = 5,
-                                        max = N_SOLVENTS,
-                                        value = N_SOLVENTS,
-                                        updatemode='drag',                                        
-                                        step = None,
-                                        marks = {5: '5', 10 : '10', 25: '25', 50: '50', 100 : '100', N_SOLVENTS : 'all'}
-                                        )
-                                ]),
                                 html.Div(id = 'greenness-div',className = 'filters-type', children = [
-                                html.P(['Show solvents with G',\
-                                        html.Span(id = 'greenness-indicator', children = ' > 0')]),  
+                                html.P(['Set lower limit for G, G > ',\
+                                        html.Span(id = 'greenness-indicator', children = '0')]),  
 
                                     dcc.Slider(
                                         id = 'greenness-filter',
@@ -245,7 +233,8 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                                         )
                                 ]),
                                 html.Div(id = 'div-temperature-range',className = 'filters-type', children = [
-                                    html.P(['Show solvents with the boiling point within ', html.Span(id='output-temperature-slider')]),
+                                    html.P(['Set range for boiling point, ', 
+                                            html.Span(id='output-temperature-slider')]),
                                     dcc.RangeSlider(
                                         id='temperatures-range-slider',
                                         min = TEMPERATURE_RANGE[0],
@@ -260,7 +249,7 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                                     )]
                                ),
                                 html.Div(id = 'div-viscosity-range',className = 'filters-type', children = [
-                                    html.P(['Show solvents with the viscosity within ', html.Span(id='output-viscosity-slider')]),
+                                    html.P(['Set range for viscosity, ', html.Span(id='output-viscosity-slider')]),
                                     dcc.RangeSlider(
                                         # I need to make a non-linear slider due to the big range of values... (might be that some are wrong though)
                                         id='viscosity-slider',
@@ -274,7 +263,7 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                                     )]
                                ),
                                 html.Div(id = 'div-surface-tension-range',className = 'filters-type', children = [
-                                    html.P(['Show solvents with the surface tension within ', html.Span(id='output-surface-tension-slider')]),
+                                    html.P(['Set range for surface tension ', html.Span(id='output-surface-tension-slider')]),
                                     dcc.RangeSlider(
                                         id='surface-tension-slider',
                                         min = SURFACE_TENSION_RANGE[0],
@@ -285,9 +274,22 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                                         marks = {value : f'{value}' for value in SURFACE_TENSION_RANGE},
                                         pushable = 5
                                     )]
-                               ),                                 
+                               ),
+                                html.Div(id = 'distance-div',className = 'filters-type', children = [                                    
+                                html.P('Select number of closest solvents:', id = 'distance-filter-text'),  
+
+                                    dcc.Slider(
+                                        id = 'distance-filter',
+                                        min = 5,
+                                        max = N_SOLVENTS,
+                                        value = N_SOLVENTS,
+                                        updatemode='drag',                                        
+                                        step = None,
+                                        marks = {5: '5', 10 : '10', 25: '25', 50: '50', 100 : '100', N_SOLVENTS : 'all'}
+                                        )
+                                ]),                                 
                                html.Div(id = 'div-hazard-list',className = 'filters-type', children = [
-                               html.P('Exclude solvents by hazard label'),
+                               html.P('Exclude solvents by hazard label(s)'),
                                     dcc.Dropdown(
                                         id = 'hazard-list',
                                         options=[{'label': label + f': {text}', 'value': label} for text, label in zip(df2['Fulltext'][2:48],df2.index[2:48])],
@@ -297,7 +299,7 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                                         style = {'text-align' : 'left'}),
                                 ]),
                                 html.Div(id = 'checklist-div', className = 'filters-type',  children = [                                
-                               html.P(html.Span('Define your own composite score (G)', className = 'hover-span', title = 'Uncheck the categories to be excluded from the G calculation')),
+                               html.P(html.Span('Set subcategories for G calculation', className = 'hover-span', title = 'Uncheck the categories to be excluded from the G calculation')),
                                html.Div(style = {'text-align' : 'left'} , children = [
                                     html.P(html.Em('Waste')),
                                     dcc.Checklist(id = 'checklist-waste',
@@ -329,7 +331,7 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                             ]),
                         
             html.Div(id = 'table-div', children = [
-                html.H5('Selection table', id = 'title-table', style = {'text-align' : 'center'}),
+                html.H5('Selection Table', id = 'title-table', style = {'text-align' : 'left'}),
                 dash_table.DataTable(
                     id='table',
                     columns = TABLE_DCC, # defined at the beginning,
@@ -343,14 +345,17 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                     sort_action='native',
                     style_cell_conditional=[
                     {'if': {'column_id': 'Solvent Name'},
-                        'textAlign': 'left','width': '20px','maxWidth': '100px'
-                    }],
+                        'textAlign': 'left', 'maxWidth': '0', 'minWidth': '40%'},
+                    {'if': {'column_id': 'Boiling Point (°C)'}, 'width': '30px', 'maxWidth': '30px', 'minWidth': '30px'}
+                    ],
                     style_table= dict(#overflowY = 'scroll',
                                  # overflowX = 'auto',
                                  # height = '30vh',
                                  width = '100%',
                                  border = 'thin lightgrey solid'),
-                    style_cell = {'minWidth': '0px', 'width': '20px','maxWidth': '75px', 'text-align':'right','textOverflow': 'ellipsis'},
+                    style_cell = {'minWidth': '40px', 'width': '40px','maxWidth': '40px', 'text-align':'center','textOverflow': 'ellipsis', 'vertical-align': 'top'},
+                    style_header= {'whiteSpace' : 'normal', 'fontWeight': 'bold', 'textOverflow': 'ellipsis'}
+                    
                     )
                 ])
             ])                          
@@ -362,16 +367,17 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                       figure= { "data": traces,
                                 "layout": plot_layout,
                                 },
-                      config={'editable' : False, 'responsive' : True},
-                      style = { 'vertical-align': 'top', 'width' : '40vw', 'height': '60vh'}
+                      config={'editable' : False},
+                      responsive = True,
+                      style = { 'vertical-align': 'top', 'width' : '35vw', 'heigth' : '35vh'}
                       )
-                ]),
+                ], style = {}),
         ]),
         #----------- Third column, where the info goes (how it works + solvent info) ------------------------
         html.Div(id = 'column-right-div',className = 'column right', children = [
             html.Div(id = 'intro-div', className = 'container', children = 
                     html.Details(INTRO_TEXT,\
-                                 id = 'div-instructions')
+                                 id = 'details-how-it-works')
                     ),
             html.Div(id = 'report', className = 'container', children = create_report()),
         ]),
@@ -399,14 +405,14 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
     dash.dependencies.Output('output-temperature-slider', 'children'),
     [dash.dependencies.Input('temperatures-range-slider', 'value')])
 def update_temperature_output(value):
-    return '{} and {} °C'.format(*value)
+    return '{}-{} °C'.format(*value)
 
 # Updates the  information on the surface tension filter 
 @app.callback(
     dash.dependencies.Output('output-surface-tension-slider', 'children'),
     [dash.dependencies.Input('surface-tension-slider', 'value')])
 def update_surface_tension_output(value):
-    return '{:.0f} and {:.0f} mN/m'.format(*value)
+    return '{:.0f}-{:.0f} mN/m'.format(*value)
 
 # Updates the  information on the viscosity filter 
 @app.callback(
@@ -415,7 +421,7 @@ def update_surface_tension_output(value):
 def update_viscosity_output(value):
     # value = [10**v for v in value]
     # return '{:.1e} and {:.1e} mPa∙s'.format(*value)
-    return [' '] + number2scientific(10**value[0]) + [' and '] + number2scientific(10**value[1]) + [' mPa∙s']
+    return [' '] + number2scientific(10**value[0]) + ['-'] + number2scientific(10**value[1]) + [' mPa∙s']
 
 # Selector of the method to choose your solute parameters, hides/shows the Input
 @app.callback([Output('hansen-div', 'hidden'),
@@ -464,13 +470,39 @@ def update_selected_solvent(clicked_data, data):
 @app.callback(Output('greenness-indicator', 'children'),
              [Input('greenness-filter','value')])
 def update_GSK_filter(value):
-    return f' > {value:d}'
+    return f'{value:d}'
+
+
+
+@app.callback(Output('refinement-options', 'children'),
+              [Input('filters-details', 'n_clicks')])
+def change_text_refinement(n):
+    children = html.B('Refinement options (click to open)')
+    if n == None:
+        return children
+    
+    if n % 2 == 1:
+        children = html.B('Refinement options (click to close)')
+    
+    return children
+
+@app.callback(Output('title-how-it-works', 'children'),
+              [Input('details-how-it-works', 'n_clicks')])
+def change_text_intro(n):
+    children = html.B('How it works? (Click to open)')
+    if n == None:
+        return children
+    
+    if n % 2 == 1:
+        children = html.B('How it works? (Click to close)')
+    return children
+
 
 # Updates text from the number-of-solvents filter
-@app.callback(Output('distance-filter-text', 'children'),
-             [Input('distance-filter','value')])
-def update_distance_filter(value):
-    return f'Show only the {value:d}-first closest solvents:'
+# @app.callback(Output('distance-filter-text', 'children'),
+#              [Input('distance-filter','value')])
+# def update_distance_filter(value):
+#     return 'Select number of closest solvents:'
 
 # Main callaback, which gathers all the info and responds to it
 @app.callback([Output('main-plot', 'figure'),
@@ -658,5 +690,5 @@ def serve_static(resource):
     return flask.send_from_directory(STATIC_PATH, resource)
 
 if __name__ == '__main__':
-#    app.run_server(debug=True, port = 8051, host = '130.239.229.125') # wifi
+    # app.run_server(debug=True, port = 8051, host = '130.239.229.125') # wifi
     app.run_server(debug=True, port = 8051, host = '130.239.110.240') # LAN

@@ -345,7 +345,7 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                     sort_action='native',
                     style_cell_conditional=[
                     {'if': {'column_id': 'Solvent Name'},
-                        'textAlign': 'left', 'maxWidth': '0', 'minWidth': '40%'},
+                        'textAlign': 'left', 'maxWidth': '150px', 'minWidth': '50px'},
                     {'if': {'column_id': 'Boiling Point (°C)'}, 'width': '30px', 'maxWidth': '30px', 'minWidth': '30px'}
                     ],
                     style_table= dict(#overflowY = 'scroll',

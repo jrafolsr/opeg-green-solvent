@@ -89,17 +89,17 @@ axis_template = dict(showbackground = True, backgroundcolor = '#F0F0F0', gridcol
 
 plot_layout = go.Layout(title = dict(text = 'Hansen Space<br>dD = ' + f2s(0) + '  dP = ' + f2s(0) + '  dH = ' + f2s(0),\
                                      y = 0.9, x = 0.5, xanchor = 'center', yanchor = 'top',\
-                                     font  = dict(size = 20, family = 'Arial', color = 'rgb(50, 50, 50)')),
-                        font = {'size' : 11},
+                                     font  = dict(size = 16, family = 'Arial', color = 'rgb(50, 50, 50)')),
+                        # font = {'size' : 11},
                         paper_bgcolor= '#F0F0F0',
                         plot_bgcolor = '#F0F0F0',
                         margin =  dict(t =  .25, b =  .25,l =  .25, r =  .25),
                         hoverlabel = dict(bgcolor =  'black', font = {'color': 'white'}), 
                         scene= dict(aspectmode = "cube",
 #                               aspectratio = {'x' : 1, 'y' : 2, 'z' : 2},
-                               xaxis = dict(title = 'Dispersion (MPa)<sup>1/2</sup>', **axis_template),
-                               yaxis = dict(title =  'Polarity (MPa)<sup>1/2</sup>', **axis_template ),
-                               zaxis = dict(title = 'Hydrogen bonding (MPa)<sup>1/2</sup>', **axis_template),
+                               xaxis = dict(title = 'Dispersion dD (MPa)<sup>1/2</sup>', **axis_template),
+                               yaxis = dict(title =  'Polarity dP (MPa)<sup>1/2</sup>', **axis_template ),
+                               zaxis = dict(title = 'Hydrogen bonding dH (MPa)<sup>1/2</sup>', **axis_template),
                                camera = {"eye": {"x": 1.5, "y": 1.5, "z": 0.1}}
                                ),
                         showlegend = False,
@@ -112,16 +112,15 @@ app.config['suppress_callback_exceptions'] = True
 
 # Some text saved in variables
 INTRO_TEXT = [html.Summary(id = 'title-how-it-works', children = html.B('How it works? (Click to open)')),\
-              html.P(['This app helps you to identify functional and environmentally green solvents. The likelihood to be functional is based on ',
-              html.Span('Hansen solubility parameters (HSP)', title = 'Dispersion (dD), Polarity (dP) and Hydrogen bonding (dH)', className = 'hover-span'),', where a shorter distance in Hansen Space ',  html.Span(['(R', html.Sub('a'),')'], title = r'Ra = [4(dD2 - dD1)^2 + (dP2 - dP1)^2 + (dH2 - dH1)^2]^(1/2)', className = 'hover-span'), ' corresponds to a more similar solvent. The '  ,\
-              html.Span(' greenness or composite score (G)', title = 'G = (Waste x Environemt x Health x Safety)^(1/4)', className = 'hover-span'),\
-              ' is based on the GlaxoSmithKline (GSK) solvent sustainability guide, where a higher G means a greener alternative.']),\
-              html.P(['(1) Use the radiobuttons on the left panel to either estimate the ',\
-                      html.B('HSP coordinates'), ' of your solute from known functional solvent(s) or to manually enter the values. Then click ', html.B('UPDATE.')]),\
-              html.P(['(2) The solute is highlighted in the ', html.B('Hansen Space.'), ' Use the mouse to explore neighboring solvents. Click on the solvent or select it from the table to find more information.']),
-              html.P(['(3) The ', html.B('Selection Table'),' ranks the solvents based on the distance R', html.Sub('a'), ' to your solute, and specifies G.']),
-              html.P(['(4) Click ', html.B('QUICK PATH'), ' to see a quick testing route towards a green and functional solvent.']),
-              html.P(['(5) Use the ', html.B('Refinement options'), ' to refine your search. Click  ', html.B('UPDATE'), ' to apply your changes.'])]
+              html.P(['Tick the appropriate option in the upper left panel to either: enter your known functional solvent(s) to approximate the ',\
+                       html.Span('Hansen solubility parameters (HSP)', title = 'Dispersion (dD), Polarity (dP) and Hydrogen bonding (dH)', className = 'hover-span'),\
+                           ' of your solute, or directly enter the HSP of your solute. Click ', html.B('Update'), '.']),\
+                  html.P(['The ', html.B('Solvent Ranking Table'),' orders the solvents by their distance ',\
+                          html.Span(['(R', html.Sub('a'),')'], title = r'Ra = [4(dD2 - dD1)^2 + (dP2 - dP1)^2 + (dH2 - dH1)^2]^(1/2)', className = 'hover-span'),\
+                              ' to the solute in the Hansen space, i.e. by their similarity in solubility capacity of the defined solute. You can alternatively rank the solvents according to their composite sustainability score (G, a higher value represents a more sustainable alternative), boiling point (bp), viscosity (η), or surface tension (𝜎).']),\
+                  html.P(dcc.Markdown('Get detailed information regarding any solvent’s chemical structure, physical properties, and sustainability indicators by selecting a solvent from the table or in the **Hansen space** graph, where each solvent is represented (marker color and size indicates its G score).')),\
+                  html.P(dcc.Markdown('Under **Refinement options** in the left panel, a limited range for G, bp, η, and 𝜎 can be defined. Click **Update** to apply the refinement options.')),\
+                  html.P(dcc.Markdown('Click **Quick path**  to get a sequential path to greener functional solvents. Starting from your solute, each iteration finds the next nearest solvent with a G higher than the previous.'))]
 
 REFERENCES_TEXT0 = ['Hansen solubility ', html.A('theory and parameters', href = 'https://www.stevenabbott.co.uk/practical-solubility/hsp-basics.php', target='_blank'), ' (Last accessed: 2018-10-22)', \
                      html.Br(),\
@@ -129,14 +128,15 @@ REFERENCES_TEXT0 = ['Hansen solubility ', html.A('theory and parameters', href =
                      ' and ', html.A('[2]', href = 'https://pubs.rsc.org/en/content/articlelanding/2011/gc/c0gc00918k', target='_blank'), html.Br(),\
                      'GHS statements from ', html.A('PubChem', href = 'https://pubchem.ncbi.nlm.nih.gov/', target='_blank'), ' (Last accessed: 2019-05-30)',\
                      ' and ', html.A('European Chemicals Agency (ECHA) C&L Inventory', href = 'https://echa.europa.eu/information-on-chemicals/cl-inventory-database/', target='_blank'), ' (Last accessed: 2019-05-30)']
-REFERENCES_TEXT1 = ['Find the publication here (soon available)', html.Br(),
+REFERENCES_TEXT1 = ["The viscosity and surface tension are given between 20-40 °C.",html.Br(),\
+                    'Find the publication here (soon available)', html.Br(),\
                      'Made by the ', html.A('Organic Photonics and Electronics Group (OPEG)', href = 'http://www.opeg-umu.se/', target='_blank')] 
 
 
 app.layout = html.Div([html.Div(className = 'row header-container',  children = [
        html.A(html.Img(src = r'\static\dash-logo.png',\
                 alt = 'plotly-logo',id = 'logo'), href  = 'https://plotly.com/dash/', target='_blank', style = {'height' : 'auto', 'max-width' : '100%'}),
-       html.H4('A Tool for the Selection of a Functional Green Solvent',
+       html.H4('Green-Solvent Selection Tool',
                          id = 'header-title'),
        html.A(html.Img(src = r'\static\opeg-logo.png',\
                 alt = 'opeg-logo',\
@@ -331,7 +331,7 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                             ]),
                         
             html.Div(id = 'table-div', children = [
-                html.H5('Selection Table', id = 'title-table', style = {'text-align' : 'left'}),
+                html.H5('Solvent Ranking Table', id = 'title-table', style = {'text-align' : 'left'}),
                 dash_table.DataTable(
                     id='table',
                     columns = TABLE_DCC, # defined at the beginning,
@@ -362,16 +362,16 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
                     ]),
         #----------- Second column, where the plot goes ----------------
         html.Div(className = 'column middle', children = [         
-          html.Div(id = 'div-fig', children = [
+          # html.Div(id = 'div-fig', children = [
                 dcc.Graph(id='main-plot', 
                       figure= { "data": traces,
                                 "layout": plot_layout,
                                 },
                       config={'editable' : False},
                       responsive = True,
-                      style = { 'vertical-align': 'top', 'width' : '35vw', 'heigth' : '35vh'}
+                      # style = { 'vertical-align': 'top', 'width' : '35vw'}
                       )
-                ], style = {}),
+                # ], style = {}),
         ]),
         #----------- Third column, where the info goes (how it works + solvent info) ------------------------
         html.Div(id = 'column-right-div',className = 'column right', children = [
@@ -386,7 +386,7 @@ app.layout = html.Div([html.Div(className = 'row header-container',  children = 
     html.Div([html.Div('Sources', className = 'footer-col',\
                                style = {'font-size' : '3vmin','width' : 'min-content','max-width' : '20%'}),\
                html.Div(REFERENCES_TEXT0, className = 'footer-col', style = {'max-width' : '50%'}),\
-               html.Div(REFERENCES_TEXT1, className = 'footer-col', style = {'max-width' : '20%'})],\
+               html.Div(REFERENCES_TEXT1, className = 'footer-col', style = {'max-width' : '25%'})],\
                   className = 'row sources-container')
 ])
 
@@ -419,9 +419,20 @@ def update_surface_tension_output(value):
     dash.dependencies.Output('output-viscosity-slider', 'children'),
     [dash.dependencies.Input('viscosity-slider', 'value')])
 def update_viscosity_output(value):
-    # value = [10**v for v in value]
-    # return '{:.1e} and {:.1e} mPa∙s'.format(*value)
-    return [' '] + number2scientific(10**value[0]) + ['-'] + number2scientific(10**value[1]) + [' mPa∙s']
+    value = [10**v for v in value]
+    if value[1] < 10:
+        if value[0] < 10:
+            return '{:.1f} and {:.1f} mPa∙s'.format(*value)
+        else:
+            return '{:.0f} and {:.1f} mPa∙s'.format(*value)
+    else:
+        if value[0] < 10:
+             return '{:.1f} and {:.0f} mPa∙s'.format(*value)
+        else:
+            return '{:.0f} and {:.0f} mPa∙s'.format(*value)
+    
+
+    # return [' '] + number2scientific(10**value[0]) + ['-'] + number2scientific(10**value[1]) + [' mPa∙s']
 
 # Selector of the method to choose your solute parameters, hides/shows the Input
 @app.callback([Output('hansen-div', 'hidden'),
@@ -475,7 +486,7 @@ def update_GSK_filter(value):
 
 
 @app.callback(Output('refinement-options', 'children'),
-              [Input('filters-details', 'n_clicks')])
+              [Input('refinement-options', 'n_clicks')])
 def change_text_refinement(n):
     children = html.B('Refinement options (click to open)')
     if n == None:
@@ -487,7 +498,7 @@ def change_text_refinement(n):
     return children
 
 @app.callback(Output('title-how-it-works', 'children'),
-              [Input('details-how-it-works', 'n_clicks')])
+              [Input('title-how-it-works', 'n_clicks')])
 def change_text_intro(n):
     children = html.B('How it works? (Click to open)')
     if n == None:
@@ -575,7 +586,7 @@ def main_plot(update,reset,path, figure,method, dD, dP, dH, greenness, ndistance
         
     
     # Change the title, which contains the current values for dP, dD and dH
-    figure['layout']['title']['text'] = 'Hansen Space<br>dD = ' + f2s(dD) + '  dP = ' + f2s(dP) + '  dH = ' + f2s(dH)
+    figure['layout']['title']['text'] = "Hansen Space<br>Solute's HSP: dD = " + f2s(dD) + '  dP = ' + f2s(dP) + '  dH = ' + f2s(dH)
     # Updatesthe Ra based on the new Hansen coordinates
     df['Ra'] = update_Ra(df[HANSEN_COORDINATES], [dD,dP,dH])
     #    Update the trace that shows the "Virtual solvent" in case it is not one from the list

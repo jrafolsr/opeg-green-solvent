@@ -8,6 +8,7 @@ import numpy as np
 import dash_html_components as html
 from pandas import read_excel
 import plotly.graph_objs as go
+import dash_core_components as dcc
 
 HANSEN_COORDINATES = ['dD - Dispersion','dP - Polarity','dH - Hydrogen bonding']
 WASTE = ['Incineration','Recycling','Biotreatment','VOC Emissions'] # Columns' names defining the waste score
@@ -92,7 +93,7 @@ def create_report(data = None):
         #         html.P('Detailed information about the classification and labelling of the solvent'),
         #         ]
         text = [html.H3('Solvent Information'),
-                html.P('Click on a solvent from the Hansen Space plot or from the Selection table to display relevant information about it.')
+                html.P(dcc.Markdown('Click on a solvent from the **Hansen Space** graph or from the **Ranking Selection Table** to display relevant information about it.'))
                 ]
         return text
     else:
@@ -138,15 +139,11 @@ def create_report(data = None):
                                 style = {'width' : '250px','max-height' : '125px','float':'right', 'margin-left' : '10px'}),
                 html.H3('{}'.format(data['Solvent Name'])),
                 html.P(['CAS: ', html.A(data['CAS Number'], href = 'https://pubchem.ncbi.nlm.nih.gov/compound/{}'.format(data['CAS Number']), target='_blank')]),
-                html.P('Hansen coordinates: dD = {:.1f}, dP = {:.1f}, dH = {:.1f}'.format(*data[HANSEN_COORDINATES])),
-                html.P('Melting point*: {:.0f} °C. Boiling point*:  {:.0f} °C.'.format(data['Melting Point (°C)'], data['Boiling Point (°C)'])),
-                html.P([
-                    'Viscosity*: {:.2f} mPa∙s. Surface tension*:  {:.2f} mN/m.'.format(data['Viscosity (mPa.s)'], data['Surface Tension (mN/m)']), 
-                    html.Br(),
-                    html.Span(html.I(html.Small(['* The solvent properties are from various sources, between 20-40 °C where applicable.', html.Br(), ' DISCLAIMER: Do not use these values for citation purposes. '])))
-                    ]),
+                html.P('HSP: dD = {:.1f}, dP = {:.1f}, dH = {:.1f}'.format(*data[HANSEN_COORDINATES])),
+                html.P('Melting point: {:.0f} °C. Boiling point:  {:.0f} °C.'.format(data['Melting Point (°C)'], data['Boiling Point (°C)'])),
+                html.P([html.Span('Viscosity:', title = 'Data given in 20-40 °C range', className = 'hover-span'), ' {:.1f} mPa∙s. '.format(data['Viscosity (mPa.s)']),\
+                        html.Span('Surface tension:', title = 'Data given in 20-40 °C range', className = 'hover-span'), '  {:.1f} mN/m.'.format(data['Surface Tension (mN/m)'])]),
                 html.P(html.B('GSK green solvent selection scores')),
-
                 html.P("GSK score: {:.1f}, User's adapted score: {:.1f}".format(data['GSK score'],data['Composite score'])),
                 html.P(scores),
                 html.B('Globally harmonized System of Classification and Labelling of Chemical'),

@@ -133,13 +133,29 @@
 	padding-right: 0;
 }
 
-#div-fig {
-/*	width : 45vw;
-	height : 70vh;*/
-	display:table-cell;
-    vertical-align:middle;
-	padding: 10px;
+
+@media (mmin-width: 1920px){
+	#main-plot {
+		width : 300px;
+		height : 233px;
+		display:table-cell;
+		vertical-align:top;
+		font-size: 1.0em
+	}
 }
+
+@media (max-width: 2600px){
+	#main-plot {
+		width : 600px;
+		height : 450px;
+		display:table-cell;
+		vertical-align:top;
+		padding: 10px;
+		font-size: 1.0em
+	}
+}
+
+
 #report {
     box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
     }

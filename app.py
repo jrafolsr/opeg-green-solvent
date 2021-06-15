@@ -136,7 +136,7 @@ REFERENCES_TEXT1 = ["Viscosities and surface tensions are given at a temperature
 app.layout = html.Div([html.Div(className = 'row header-container',  children = [
        html.A(html.Img(src = r'\static\dash-logo.png',\
                 alt = 'plotly-logo',id = 'logo'), href  = 'https://plotly.com/dash/', target='_blank', style = {'height' : 'auto', 'max-width' : '100%'}),
-       html.H4('Green-Solvent Selection Tool',
+       html.H4('Green Solvent Selection Tool',
                          id = 'header-title'),
        html.A(html.Img(src = r'\static\opeg-logo.png',\
                 alt = 'opeg-logo',\

@@ -2,7 +2,7 @@
 [![Green Solvent Tool](https://img.shields.io/badge/web--app-Green%20Solvent%20Tool-brightgreen)](https://green-solvent-tool.herokuapp.com/)
 [![OPEG research](https://img.shields.io/badge/research-OPEG-yellow)](http://www.opeg-umu.se/?i=1)
 [![MIT license](http://img.shields.io/badge/license-MIT-yellowgreen.svg)](http://opensource.org/licenses/MIT)
-
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4958395.svg)](https://github.com/jrafolsr/opeg-green-solvent)
 
 This is the source code that generates the web-app  **Green Solvent Selection Tool** created by the [Organic Photonics and Electronics Group (OPEG)](http://www.opeg-umu.se/), which can be found online [here](http://www.opeg-umu.se/green-solvent-tool).
 

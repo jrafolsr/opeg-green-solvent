@@ -87,7 +87,7 @@ traces = [solvents_trace(df),
 # Defining axis template        
 axis_template = dict(showbackground = True, backgroundcolor = '#F0F0F0', gridcolor = '#808080', zerolinecolor = '#808080')
 
-plot_layout = go.Layout(title = dict(text = 'Hansen Space<br>dD = ' + f2s(0) + '  dP = ' + f2s(0) + '  dH = ' + f2s(0),\
+plot_layout = go.Layout(title = dict(text = "<b>Hansen Space</b><br>Solute's HSP: dD = " + f2s(0) + '  dP = ' + f2s(0) + '  dH = ' + f2s(0),\
                                      y = 0.9, x = 0.5, xanchor = 'center', yanchor = 'top',\
                                      font  = dict(size = 16, family = 'Arial', color = 'rgb(50, 50, 50)')),
                         # font = {'size' : 11},
@@ -112,15 +112,15 @@ app.config['suppress_callback_exceptions'] = True
 
 # Some text saved in variables
 INTRO_TEXT = [html.Summary(id = 'title-how-it-works', children = html.B('How it works? (Click to open)')),\
-              html.P(['Tick the appropriate option in the upper left panel to either: enter your known functional solvent(s) to approximate the ',\
+              html.P(['In the upper left panel, either enter your known functional solvent(s) to approximate the ',\
                        html.Span('Hansen solubility parameters (HSP)', title = 'Dispersion (dD), Polarity (dP) and Hydrogen bonding (dH)', className = 'hover-span'),\
-                           ' of your solute, or directly enter the HSP of your solute. Click ', html.B('Update'), '.']),\
+                           ', or directly enter the HSP of your solute. Click ', html.B('Update'), '.']),\
                   html.P(['The ', html.B('Solvent Ranking Table'),' orders the solvents by their distance ',\
                           html.Span(['(R', html.Sub('a'),')'], title = r'Ra = [4(dD2 - dD1)^2 + (dP2 - dP1)^2 + (dH2 - dH1)^2]^(1/2)', className = 'hover-span'),\
-                              ' to the solute in the Hansen space, i.e. by their similarity in solubility capacity of the defined solute. You can alternatively rank the solvents according to their composite sustainability score (G, a higher value represents a more sustainable alternative), boiling point (bp), viscosity (η), or surface tension (𝜎).']),\
-                  html.P(dcc.Markdown('Get detailed information regarding any solvent’s chemical structure, physical properties, and sustainability indicators by selecting a solvent from the table or in the **Hansen space** graph, where each solvent is represented (marker color and size indicates its G score).')),\
-                  html.P(dcc.Markdown('Under **Refinement options** in the left panel, a limited range for G, bp, η, and 𝜎 can be defined. Click **Update** to apply the refinement options.')),\
-                  html.P(dcc.Markdown('Click **Quick path**  to get a sequential path to greener functional solvents. Starting from your solute, each iteration finds the next nearest solvent with a G higher than the previous.'))]
+                              ' to the solute in the Hansen space, i.e. by their similarity in solubility capacity. You can alternatively rank the solvents according to their composite sustainability score (G, a higher value represents a more sustainable alternative), boiling point (bp), viscosity (η), or surface tension (𝜎).']),\
+                  html.P(dcc.Markdown('By selecting a solvent from the **Hansen space** or the **Solvent Ranking Table** you can get detailed information regarding its chemical structure, physical properties, and sustainability indicators.')),\
+                  html.P(dcc.Markdown('In the left pane, click **Refinement options** to define the range for G, bp, η, and 𝜎. Click **Update**.')),\
+                  html.P(dcc.Markdown('Click **Quick path** for a sequential path to greener functional solvents. Starting from your solute, each iteration finds the next nearest solvent with a G higher than the previous.'))]
 
 REFERENCES_TEXT0 = ['Hansen solubility ', html.A('theory and parameters', href = 'https://www.stevenabbott.co.uk/practical-solubility/hsp-basics.php', target='_blank'), ' (Last accessed: 2018-10-22)', \
                      html.Br(),\
@@ -128,7 +128,7 @@ REFERENCES_TEXT0 = ['Hansen solubility ', html.A('theory and parameters', href =
                      ' and ', html.A('[2]', href = 'https://pubs.rsc.org/en/content/articlelanding/2011/gc/c0gc00918k', target='_blank'), html.Br(),\
                      'GHS statements from ', html.A('PubChem', href = 'https://pubchem.ncbi.nlm.nih.gov/', target='_blank'), ' (Last accessed: 2019-05-30)',\
                      ' and ', html.A('European Chemicals Agency (ECHA) C&L Inventory', href = 'https://echa.europa.eu/information-on-chemicals/cl-inventory-database/', target='_blank'), ' (Last accessed: 2019-05-30)']
-REFERENCES_TEXT1 = ["The viscosity and surface tension are given between 20-40 °C.",html.Br(),\
+REFERENCES_TEXT1 = ["Viscosities and surface tensions are given at a temperature between 20-40 °C.",html.Br(),\
                     'Find the publication here (soon available)', html.Br(),\
                      'Made by the ', html.A('Organic Photonics and Electronics Group (OPEG)', href = 'http://www.opeg-umu.se/', target='_blank')] 
 
@@ -586,7 +586,7 @@ def main_plot(update,reset,path, figure,method, dD, dP, dH, greenness, ndistance
         
     
     # Change the title, which contains the current values for dP, dD and dH
-    figure['layout']['title']['text'] = "Hansen Space<br>Solute's HSP: dD = " + f2s(dD) + '  dP = ' + f2s(dP) + '  dH = ' + f2s(dH)
+    figure['layout']['title']['text'] = "<b>Hansen Space</b><br>Solute's HSP: dD = " + f2s(dD) + '  dP = ' + f2s(dP) + '  dH = ' + f2s(dH)
     # Updatesthe Ra based on the new Hansen coordinates
     df['Ra'] = update_Ra(df[HANSEN_COORDINATES], [dD,dP,dH])
     #    Update the trace that shows the "Virtual solvent" in case it is not one from the list

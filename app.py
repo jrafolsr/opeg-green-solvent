@@ -114,13 +114,13 @@ app.config['suppress_callback_exceptions'] = True
 INTRO_TEXT = [html.Summary(id = 'title-how-it-works', children = html.B('How it works? (Click to open)')),\
               html.P(['In the upper left panel, either enter your known functional solvent(s) to approximate the ',\
                        html.Span('Hansen solubility parameters (HSP)', title = 'Dispersion (dD), Polarity (dP) and Hydrogen bonding (dH)', className = 'hover-span'),\
-                           ', or directly enter the HSP of your solute. Click ', html.B('Update'), '.']),\
+                           ', or directly enter the HSP, of your solute. Click ', html.B('Update'), '.']),\
                   html.P(['The ', html.B('Solvent Ranking Table'),' orders the solvents by their distance ',\
                           html.Span(['(R', html.Sub('a'),')'], title = r'Ra = [4(dD2 - dD1)^2 + (dP2 - dP1)^2 + (dH2 - dH1)^2]^(1/2)', className = 'hover-span'),\
                               ' to the solute in the Hansen space, i.e. by their similarity in solubility capacity. You can alternatively rank the solvents according to their composite sustainability score (G, a higher value represents a more sustainable alternative), boiling point (bp), viscosity (η), or surface tension (𝜎).']),\
-                  html.P(dcc.Markdown('By selecting a solvent from the **Hansen space** or the **Solvent Ranking Table** you can get detailed information regarding its chemical structure, physical properties, and sustainability indicators.')),\
+                  html.P(dcc.Markdown('By selecting a solvent in the **Hansen space** or the **Solvent Ranking Table** you get information regarding chemical structure, physical properties, and sustainability indicators.')),\
                   html.P(dcc.Markdown('In the left pane, click **Refinement options** to define the range for G, bp, η, and 𝜎. Click **Update**.')),\
-                  html.P(dcc.Markdown('Click **Quick path** for a sequential path to greener functional solvents. Starting from your solute, each iteration finds the next nearest solvent with a G higher than the previous.'))]
+                  html.P(dcc.Markdown('Click **Quick path** for a sequential path to greener functional solvents. Starting from the HSP of your solute, each iteration finds the next nearest solvent with a higher G than the previous.'))]
 
 REFERENCES_TEXT0 = ['Hansen solubility ', html.A('theory and parameters', href = 'https://www.stevenabbott.co.uk/practical-solubility/hsp-basics.php', target='_blank'), ' (Last accessed: 2018-10-22)', \
                      html.Br(),\

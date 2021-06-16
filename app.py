@@ -119,7 +119,7 @@ INTRO_TEXT = [html.Summary(id = 'title-how-it-works', children = html.B('How it 
                           html.Span(['(R', html.Sub('a'),')'], title = r'Ra = [4(dD2 - dD1)^2 + (dP2 - dP1)^2 + (dH2 - dH1)^2]^(1/2)', className = 'hover-span'),\
                               ' to the solute in the Hansen space, i.e. by their similarity in solubility capacity. You can alternatively rank the solvents according to their composite sustainability score (G, a higher value represents a more sustainable alternative), boiling point (bp), viscosity (η), or surface tension (𝜎).']),\
                   html.P(dcc.Markdown('By selecting a solvent in the **Hansen space** or the **Solvent Ranking Table** you get information regarding chemical structure, physical properties, and sustainability indicators.')),\
-                  html.P(dcc.Markdown('In the left pane, click **Refinement options** to define the range for G, bp, η, and 𝜎. Click **Update**.')),\
+                  html.P(dcc.Markdown('In the left panel, click **Refinement options** to define the range for G, bp, η, and 𝜎. Click **Update**.')),\
                   html.P(dcc.Markdown('Click **Quick path** for a sequential path to greener functional solvents. Starting from the HSP of your solute, each iteration finds the next nearest solvent with a higher G than the previous.'))]
 
 REFERENCES_TEXT0 = ['Hansen solubility ', html.A('theory and parameters', href = 'https://www.stevenabbott.co.uk/practical-solubility/hsp-basics.php', target='_blank'), ' (Last accessed: 2018-10-22)', \

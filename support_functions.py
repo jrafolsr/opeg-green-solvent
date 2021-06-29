@@ -16,6 +16,8 @@ HEALTH = ['Health Hazard', 'Exposure Potential']                    # Columns' n
 ENVIRONMENT = ['Aquatic Impact', 'Air Impact']                      # Idem
 SAFETY = ['Flammability and Explosion', 'Reactivity and Stability'] #Idem
 
+SCORES = [WASTE, HEALTH, ENVIRONMENT, SAFETY] 
+SCORES_NAMES = ['Waste', 'Health', 'Environment', 'Safety']
 
 df2 = read_excel('solventSelectionTool_table.xlsx', sheet_name = 1, header = 0, usecols=(0,1))
 df2.set_index('Statements', inplace=True, drop=True)
@@ -33,7 +35,7 @@ def solvents_trace(df, show_path = False):
     y = df['dP - Polarity']
     z = df['dH - Hydrogen bonding']
     
-    hovertemplate = ['<b>{0:s}</b><br>Score = {1:.1f}<br>dD = {2:.1f}<br>dP = {3:.1f}<br>dH = {4:.1f} <extra>Ra = {5:.1f}<br>mp  = {6:.0f} °C<br>bp  = {7:.0f} °C<br>η  = {8:.2g} mPa∙s<br>𝜎  = {9:.2g} mN/m</extra>'.format(*data[['Solvent Name','Composite score','dD - Dispersion', 'dP - Polarity', 'dH - Hydrogen bonding' ,'Ra', 'Melting Point (°C)','Boiling Point (°C)', 'Viscosity (mPa.s)', 'Surface Tension (mN/m)']]) for index, data in df.iterrows()]  
+    hovertemplate = ['<b>{0:s}</b><br>G = {1:.1f}<br>dD = {2:.1f}<br>dP = {3:.1f}<br>dH = {4:.1f} <extra>Ra = {5:.1f}<br>mp  = {6:.0f} °C<br>bp  = {7:.0f} °C<br>η  = {8:.2g} mPa∙s<br>𝜎  = {9:.2g} mN/m</extra>'.format(*data[['Solvent Name','Composite score','dD - Dispersion', 'dP - Polarity', 'dH - Hydrogen bonding' ,'Ra', 'Melting Point (°C)','Boiling Point (°C)', 'Viscosity (mPa.s)', 'Surface Tension (mN/m)']]) for index, data in df.iterrows()]  
                   
                                          
     # Some function that scales the size with the greeness score                                     
@@ -79,7 +81,7 @@ def update_Ra(hansen_coordinates, reference = [None] * 3):
     Ra = 4*distance['dD - Dispersion'] + distance['dP - Polarity']+ distance['dH - Hydrogen bonding']
     return np.sqrt(Ra).round(2)
 
-def create_report(data = None):
+def create_report(data = None, scores = SCORES):
     if data is None:
         # text = [html.H3('Solvent Information'),
         #         html.P('CAS', title = 'The CAS universally identifies the solvent'),
@@ -93,15 +95,30 @@ def create_report(data = None):
         #         html.P('Detailed information about the classification and labelling of the solvent'),
         #         ]
         text = [html.H3('Solvent Information'),
-                html.P(dcc.Markdown('Click on a solvent from the **Hansen Space** graph or from the **Ranking Selection Table** to display relevant information about it.'))
+                html.P(dcc.Markdown('Click on a solvent from the **Hansen Space** graph or from the **Solvent Ranking Table** to display relevant information about it.'))
                 ]
         return text
     else:
-        # Indices string
-        scores = ''
-        for label in WASTE + ENVIRONMENT + HEALTH + SAFETY:
-            scores += '{:s}: {:.1f}; '.format(label, data.loc[label])
-            
+        
+        scores_text = []   
+        
+        for label, score in zip(SCORES_NAMES, scores):
+            if len(score):
+                # value = ((data[score]).prod(axis =1, skipna = False)).pow(1/len(score))
+                value = ((data[score]).prod(skipna = False))**(1/len(score))
+                
+                hovering = ''
+                for el in score:
+                    hovering += f'{el} = {data[el]:.0f}\n' 
+            else:
+                value = np.nan
+                hovering = 'No subcategory selected'
+
+            scores_text.append(html.Span([f'{label:s} = ', f'{value:.1f}'], title = hovering, className = 'hover-span'))
+            scores_text.append(', ')
+        
+        scores_text.pop()
+        
         # Hazard string
         if data['Hazard Labels'] == 'No Data':
             hazard_labels = ['No Data']
@@ -134,7 +151,7 @@ def create_report(data = None):
     
     
         text = [html.Img(src = '\\static\\' + '{0:s}.svg'.format(data['CAS Number']),\
-                                 alt='Chemical strcuture',\
+                                 alt='Chemical structure',\
                                  title = 'Chemical strcuture of {}'.format(data['Solvent Name']),\
                                 style = {'width' : '250px','max-height' : '125px','float':'right', 'margin-left' : '10px'}),
                 html.H3('{}'.format(data['Solvent Name'])),
@@ -143,10 +160,10 @@ def create_report(data = None):
                 html.P('Melting point: {:.0f} °C. Boiling point:  {:.0f} °C.'.format(data['Melting Point (°C)'], data['Boiling Point (°C)'])),
                 html.P([html.Span('Viscosity:', title = 'Data given in 20-40 °C range', className = 'hover-span'), ' {:.1f} mPa∙s. '.format(data['Viscosity (mPa.s)']),\
                         html.Span('Surface tension:', title = 'Data given in 20-40 °C range', className = 'hover-span'), '  {:.1f} mN/m.'.format(data['Surface Tension (mN/m)'])]),
-                html.P(html.B('GSK green solvent selection scores')),
-                html.P("GSK score: {:.1f}, User's adapted score: {:.1f}".format(data['GSK score'],data['Composite score'])),
-                html.P(scores),
-                html.B('Globally harmonized System of Classification and Labelling of Chemical'),
+                html.P([html.B('GSK greenness scores', title = 'GlaxoSmithKline'), html.Br(),\
+                        html.I("Composite score:"), html.Br(), " G = {:.1f}".format(data['Composite score']), html.Br(),\
+                        html.I('Category scores:'), html.Br()] + scores_text),
+                html.B('Globally Harmonized System (GHS) of classification and labelling of chemicals'),
                 html.P(hazard_html),
                 html.P(precaution_html)]
         return text
@@ -178,16 +195,25 @@ def GSK_calculator(df, scores):
         - scores: list of scores category, each element containing a list with the subcategories names
     """
     k = 0
-    gmean = 1
+    G = 1
+    
+    broken_down_scores = []
+    
     for element in scores:
         if len(element):
-            gmean *= ((df[element]).prod(axis =1, skipna = False)).pow(1/len(element))
+            value = ((df[element]).prod(axis =1, skipna = False)).pow(1/len(element))
+            G *= value
+            broken_down_scores.append(value)
             k += 1
+        else:
+            broken_down_scores.append(np.nan)
+            
     if k > 0:
-        gmean = np.power(gmean,1/k).round(1)
+        G = np.power(G,1/k).round(1)
     else:
-        gmean = np.nan
-    return gmean
+        G = np.nan
+    
+    return G, broken_down_scores
 
 def f2s(x):
     """

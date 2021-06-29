@@ -67,8 +67,8 @@ TABLE_DCC = [{"type" : coltype, "name": key, "id": value, 'format' : colformat} 
 N_SOLVENTS = df.shape[0]
 ##----------------- Adding new columns -----------------------------------
 df['Ra'] = update_Ra(df[HANSEN_COORDINATES])
-df['GSK score'] = GSK_calculator(df, [WASTE, HEALTH, ENVIRONMENT, SAFETY])  # This is the GSK score according to the paper
-df['Composite score'] = GSK_calculator(df, [WASTE, HEALTH, ENVIRONMENT, SAFETY]) # This is the composite score, that the user can modify, initial eq. to GSK
+df['GSK score'], _ = GSK_calculator(df, [WASTE, HEALTH, ENVIRONMENT, SAFETY])  # This is the GSK score according to the paper
+df['Composite score'], _ = GSK_calculator(df, [WASTE, HEALTH, ENVIRONMENT, SAFETY]) # This is the composite score, that the user can modify, initial eq. to GSK
 
 
 #----------------CONFIGURING THE INITAL 3D PLOT--------------------------------
@@ -448,8 +448,12 @@ def show_input_method(method):
 @app.callback(Output('report', 'children'),
              [Input('table','selected_rows')],
              [State('table','data'),
-              State('table','columns')])
-def update_report(selected_row, data, columns):
+              State('table','columns'),
+              State('checklist-waste', 'value'),
+              State('checklist-health', 'value'),
+              State('checklist-environment', 'value'),
+              State('checklist-safety', 'value')])
+def update_report(selected_row, data, columns, waste, health, environment, safety):
     if selected_row == []:
         # No solvent selected, emty report
         return create_report()
@@ -458,7 +462,7 @@ def update_report(selected_row, data, columns):
         n = selected_row[0]
         name_solvent = data[n]['Solvent Name'] # Selecet the name of the solvent from the key:" Solvent name"
         
-        return create_report(df.loc[name_solvent])
+        return create_report(df.loc[name_solvent], [waste, health, environment, safety])
     
 # If a solvent is clicked on the graph, it updates selects the same solvent from the table (and therefore, creates a report)
 @app.callback(Output('table', 'selected_rows'),
@@ -626,7 +630,7 @@ def main_plot(update,reset,path, figure,method, dD, dP, dH, greenness, ndistance
 #    [print(item) for item in ENVIRONMENT if item not in environment]
 #    [print(item) for item in SAFETY if item not in safety]
     #   Updates the composite score based on the labels the user selected    
-    df['Composite score'] = GSK_calculator(df, [waste, health, environment, safety])
+    df['Composite score'], _ = GSK_calculator(df, [waste, health, environment, safety])
 #    print('The GSK score has been updated')
   
     # Now, we creat ethe filters for the data to show   

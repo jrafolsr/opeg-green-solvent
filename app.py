@@ -129,7 +129,7 @@ REFERENCES_TEXT0 = ['Hansen solubility ', html.A('theory and parameters', href =
                      'GHS statements from ', html.A('PubChem', href = 'https://pubchem.ncbi.nlm.nih.gov/', target='_blank'), ' (Last accessed: 2019-05-30)',\
                      ' and ', html.A('European Chemicals Agency (ECHA) C&L Inventory', href = 'https://echa.europa.eu/information-on-chemicals/cl-inventory-database/', target='_blank'), ' (Last accessed: 2019-05-30)']
 REFERENCES_TEXT1 = ["Viscosities and surface tensions are given at a temperature between 20-40 °C.",html.Br(),\
-                    'Find the publication here (soon available)', html.Br(),\
+                    'Find the publication in ', html.A('Nature Communications',href = 'https://doi.org/10.1038/s41467-021-24761-x', target='_blank'), html.Br(),\
                      'Made by the ', html.A('Organic Photonics and Electronics Group (OPEG)', href = 'http://www.opeg-umu.se/', target='_blank')] 
 
 

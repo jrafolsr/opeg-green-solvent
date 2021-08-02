@@ -109,7 +109,7 @@ plot_layout = go.Layout(title = dict(text = "<b>Hansen Space</b><br>Solute's HSP
 # Some of the callbacks will not exist at the beginning of the page.... check on that.
 app.config['suppress_callback_exceptions'] = True
 
-## Google analytics line
+## Google analytics line and Matomo code
 app.index_string = """<!DOCTYPE html>
 <html>
     <head>
@@ -126,6 +126,23 @@ app.index_string = """<!DOCTYPE html>
         <title>{%title%}</title>
         {%favicon%}
         {%css%}
+        
+        <!-- Matomo -->
+        <script type="text/javascript">
+          var _paq = window._paq = window._paq || [];
+          /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+          _paq.push(['trackPageView']);
+          _paq.push(['enableLinkTracking']);
+          (function() {
+            var u="https://green-solvent-tool.matomo.cloud/";
+            _paq.push(['setTrackerUrl', u+'matomo.php']);
+            _paq.push(['setSiteId', '1']);
+            var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+            g.type='text/javascript'; g.async=true; g.src='//cdn.matomo.cloud/green-solvent-tool.matomo.cloud/matomo.js'; s.parentNode.insertBefore(g,s);
+          })();
+        </script>
+        <!-- End Matomo Code -->
+
     </head>
     <body>
         {%app_entry%}

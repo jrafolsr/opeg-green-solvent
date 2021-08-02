@@ -122,10 +122,6 @@ app.index_string = """<!DOCTYPE html>
         
           gtag('config', 'G-EW2V7KXFZB');
         </script>
-        {%metas%}
-        <title>{%title%}</title>
-        {%favicon%}
-        {%css%}
         
         <!-- Matomo -->
         <script type="text/javascript">
@@ -142,6 +138,12 @@ app.index_string = """<!DOCTYPE html>
           })();
         </script>
         <!-- End Matomo Code -->
+
+        {%metas%}
+        <title>{%title%}</title>
+        {%favicon%}
+        {%css%}
+        
 
     </head>
     <body>
